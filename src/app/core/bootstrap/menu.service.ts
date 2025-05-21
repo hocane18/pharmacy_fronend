@@ -34,50 +34,7 @@ export interface Menu {
   providedIn: 'root',
 })
 export class MenuService {
-  private readonly menu$ = new BehaviorSubject<Menu[]>([
-    {
-      route: 'dashboard',
-      name: 'Dashboard',
-      type: 'link',
-      icon: 'dashboard',
-    },
-    {
-      route: 'sales',
-      name: 'Sales',
-      type: 'link',
-      icon: 'shopping_cart',
-    },
-    {
-      route: 'inventory',
-      name: 'Inventory',
-      type: 'link',
-      icon: 'inventory',
-    },
-    {
-      route: 'customers',
-      name: 'Customers',
-      type: 'link',
-      icon: 'people',
-    },
-    {
-      route: 'prescriptions',
-      name: 'Prescriptions',
-      type: 'link',
-      icon: 'medical_services',
-    },
-    {
-      route: 'reports',
-      name: 'Reports',
-      type: 'link',
-      icon: 'assessment',
-    },
-    {
-      route: 'settings',
-      name: 'Settings',
-      type: 'link',
-      icon: 'settings',
-    },
-  ]);
+  private readonly menu$ = new BehaviorSubject<Menu[]>([]);
 
   /** Get all the menu data. */
   getAll() {

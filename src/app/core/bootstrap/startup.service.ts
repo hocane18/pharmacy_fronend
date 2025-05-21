@@ -23,7 +23,8 @@ export class StartupService {
         .change()
         .pipe(
           tap(user => this.setPermissions(user)),
-          tap(() => this.setMenu())
+          switchMap(() => this.authService.menu()),
+          tap(menu => this.setMenu(menu))
         )
         .subscribe({
           next: () => resolve(),
@@ -32,57 +33,14 @@ export class StartupService {
     });
   }
 
-  private setMenu() {
-    const menu: Menu[] = [
-      {
-        route: 'dashboard',
-        name: 'Dashboard',
-        type: 'link',
-        icon: 'dashboard',
-      },
-      {
-        route: 'sales',
-        name: 'Sales',
-        type: 'link',
-        icon: 'shopping_cart',
-      },
-      {
-        route: 'inventory',
-        name: 'Inventory',
-        type: 'link',
-        icon: 'inventory',
-      },
-      {
-        route: 'customers',
-        name: 'Customers',
-        type: 'link',
-        icon: 'people',
-      },
-      {
-        route: 'prescriptions',
-        name: 'Prescriptions',
-        type: 'link',
-        icon: 'medical_services',
-      },
-      {
-        route: 'reports',
-        name: 'Reports',
-        type: 'link',
-        icon: 'assessment',
-      },
-      {
-        route: 'settings',
-        name: 'Settings',
-        type: 'link',
-        icon: 'settings',
-      },
-    ];
+  private setMenu(menu: Menu[]) {
+    this.menuService.addNamespace(menu, 'menu');
     this.menuService.set(menu);
   }
 
   private setPermissions(user: User) {
     // In a real app, you should get permissions and roles from the user information.
-    const permissions = ['canAdd', 'canDelete', 'canEdit', 'canRead'];
+    const permissions = ['canAdd', 'canDelete', 'canEdit', 'canRead','product:read'];
     
     this.permissonsService.loadPermissions(permissions);
     this.rolesService.flushRoles();

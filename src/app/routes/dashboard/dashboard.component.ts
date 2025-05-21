@@ -19,9 +19,7 @@ import { SettingsService } from '@core';
 import { MtxAlertModule } from '@ng-matero/extensions/alert';
 import { MtxProgressModule } from '@ng-matero/extensions/progress';
 import { Subscription } from 'rxjs';
-import { DashboardService, TopProduct, StockAlert, ExpiryAlert } from './dashboard.service';
-import { NgApexchartsModule } from 'ng-apexcharts';
-import ApexCharts from 'apexcharts';
+import { DashboardService } from './dashboard.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -40,7 +38,6 @@ import ApexCharts from 'apexcharts';
     MatTabsModule,
     MtxProgressModule,
     MtxAlertModule,
-    NgApexchartsModule,
   ],
 })
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -49,18 +46,15 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly dashboardSrv = inject(DashboardService);
 
   displayedColumns: string[] = ['position', 'name', 'weight', 'symbol'];
-  topProductColumns: string[] = ['name', 'sales', 'revenue', 'growth'];
-  stockAlertColumns: string[] = ['name', 'currentStock', 'minStock', 'lastOrdered'];
-  expiryAlertColumns: string[] = ['name', 'batchNumber', 'expiryDate', 'quantity'];
-  
-  dataSource: any[] = [];
-  topProducts: TopProduct[] = [];
-  stockAlerts: StockAlert[] = [];
-  expiryAlerts: ExpiryAlert[] = [];
-  messages: any[] = [];
-  stats: any[] = [];
-  charts: any[] = [];
-  chartInstances: ApexCharts[] = [];
+  dataSource = this.dashboardSrv.getData();
+
+  messages = this.dashboardSrv.getMessages();
+
+  charts = this.dashboardSrv.getCharts();
+  chart1?: ApexCharts;
+  chart2?: ApexCharts;
+
+  stats = this.dashboardSrv.getStats();
 
   notifySubscription = Subscription.EMPTY;
 
@@ -97,46 +91,24 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
       this.updateCharts();
     });
-
-    this.dataSource = this.dashboardSrv.getData();
-    this.topProducts = this.dashboardSrv.getTopProducts();
-    this.stockAlerts = this.dashboardSrv.getStockAlerts();
-    this.expiryAlerts = this.dashboardSrv.getExpiryAlerts();
-    this.messages = this.dashboardSrv.getMessages();
-    this.stats = this.dashboardSrv.getStats();
-    this.charts = this.dashboardSrv.getCharts();
   }
 
   ngAfterViewInit() {
-    // Initialize all charts
-    setTimeout(() => {
-      this.charts.forEach((chartOptions, index) => {
-        const chartId = `chart${index + 1}`;
-        const chartElement = document.getElementById(chartId);
-        if (chartElement) {
-          const chart = new ApexCharts(chartElement, chartOptions);
-          chart.render();
-          this.chartInstances.push(chart);
-        }
-      });
-    }, 100);
+    this.ngZone.runOutsideAngular(() => this.initCharts());
   }
 
   ngOnDestroy() {
+    this.chart1?.destroy();
+    this.chart2?.destroy();
+
     this.notifySubscription.unsubscribe();
-    // Clean up chart instances
-    this.chartInstances.forEach(chart => chart.destroy());
   }
 
   initCharts() {
-    this.charts.forEach((chartOptions, index) => {
-      const chartId = `chart${index + 1}`;
-      const chartElement = document.getElementById(chartId);
-      if (chartElement) {
-        const chart = new ApexCharts(chartElement, chartOptions);
-        chart.render();
-      }
-    });
+    this.chart1 = new ApexCharts(document.querySelector('#chart1'), this.charts[0]);
+    this.chart1?.render();
+    this.chart2 = new ApexCharts(document.querySelector('#chart2'), this.charts[1]);
+    this.chart2?.render();
 
     this.updateCharts();
   }
@@ -144,23 +116,36 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   updateCharts() {
     const isDark = this.settings.getThemeColor() == 'dark';
 
-    this.charts.forEach((chartOptions, index) => {
-      const chartId = `chart${index + 1}`;
-      const chartElement = document.getElementById(chartId);
-      if (chartElement) {
-        const chart = new ApexCharts(chartElement, chartOptions);
-        chart.updateOptions({
-          chart: {
-            foreColor: isDark ? '#ccc' : '#333',
+    this.chart1?.updateOptions({
+      chart: {
+        foreColor: isDark ? '#ccc' : '#333',
+      },
+      tooltip: {
+        theme: isDark ? 'dark' : 'light',
+      },
+      grid: {
+        borderColor: isDark ? '#5a5a5a' : '#e1e1e1',
+      },
+    });
+
+    this.chart2?.updateOptions({
+      chart: {
+        foreColor: isDark ? '#ccc' : '#333',
+      },
+      plotOptions: {
+        radar: {
+          polygons: {
+            strokeColors: isDark ? '#5a5a5a' : '#e1e1e1',
+            connectorColors: isDark ? '#5a5a5a' : '#e1e1e1',
+            fill: {
+              colors: isDark ? ['#2c2c2c', '#222'] : ['#f2f2f2', '#fff'],
+            },
           },
-          tooltip: {
-            theme: isDark ? 'dark' : 'light',
-          },
-          grid: {
-            borderColor: isDark ? '#5a5a5a' : '#e1e1e1',
-          },
-        });
-      }
+        },
+      },
+      tooltip: {
+        theme: isDark ? 'dark' : 'light',
+      },
     });
   }
 
