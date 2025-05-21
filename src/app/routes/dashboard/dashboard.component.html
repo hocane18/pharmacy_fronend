@@ -52,7 +52,20 @@
   </div>
 
   <!-- Others -->
-  
+   <div class="col-md-12">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Sales by Salesmen</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <apx-chart
+        [series]="salesmenBarChartOptions.series"
+        [chart]="salesmenBarChartOptions.chart"
+        [xaxis]="salesmenBarChartOptions.xaxis"
+        [title]="salesmenBarChartOptions.title" />
+    </mat-card-content>
+  </mat-card>
+</div>
   <div class="col-md-6">
     <!-- <mat-card>
       <mat-card-header>

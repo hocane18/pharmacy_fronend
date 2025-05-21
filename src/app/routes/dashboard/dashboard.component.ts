@@ -20,7 +20,14 @@ import { MtxAlertModule } from '@ng-matero/extensions/alert';
 import { MtxProgressModule } from '@ng-matero/extensions/progress';
 import { Subscription } from 'rxjs';
 import { DashboardService } from './dashboard.service';
+import { NgApexchartsModule } from 'ng-apexcharts';
 
+export interface ChartOptions {
+  series: ApexAxisChartSeries;
+  chart: ApexChart;
+  xaxis: ApexXAxis;
+  title: ApexTitleSubtitle;
+}
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
@@ -38,13 +45,35 @@ import { DashboardService } from './dashboard.service';
     MatTabsModule,
     MtxProgressModule,
     MtxAlertModule,
+    NgApexchartsModule,
   ],
 })
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly ngZone = inject(NgZone);
   private readonly settings = inject(SettingsService);
   private readonly dashboardSrv = inject(DashboardService);
+  public salesmenBarChartOptions: any;
 
+  constructor() {
+    this.salesmenBarChartOptions = {
+      series: [
+        {
+          name: 'Sales',
+          data: [120, 90, 150, 80, 70], // Example sales data
+        },
+      ],
+      chart: {
+        type: 'bar',
+        height: 350,
+      },
+      xaxis: {
+        categories: ['John', 'Jane', 'Bob', 'Alice', 'Tom'], // Salesmen names
+      },
+      title: {
+        text: 'Sales by Salesmen',
+      },
+    };
+  }
   displayedColumns: string[] = ['position', 'name', 'weight', 'symbol'];
   dataSource = this.dashboardSrv.getData();
 
