@@ -3,9 +3,12 @@ import { ngxPermissionsGuard } from 'ngx-permissions';
 import { PermissionsRoleSwitchingComponent } from './role-switching/role-switching.component';
 import { PermissionsRouteGuardComponent } from './route-guard/route-guard.component';
 import { PermissionsTestComponent } from './test/test.component';
+import { PermissionsRoleComponent } from './role/role.component';
 
 export const routes: Routes = [
   { path: 'role-switching', component: PermissionsRoleSwitchingComponent },
+  { path: 'role', component: PermissionsRoleComponent },
+
   {
     path: 'route-guard',
     component: PermissionsRouteGuardComponent,

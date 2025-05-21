@@ -77,16 +77,16 @@ export class DashboardService {
       color: 'bg-blue-50',
     },
     {
-      title: 'Traffic',
-      amount: '1,291,922',
+      title: 'Total Users',
+      amount: '1,12',
       progress: {
         value: 80,
       },
       color: 'bg-green-50',
     },
     {
-      title: 'New User',
-      amount: '1,922',
+      title: 'Total SUppilers',
+      amount: '13',
       progress: {
         value: 40,
       },

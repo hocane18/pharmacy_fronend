@@ -14,7 +14,7 @@ import { MatGridListModule } from '@angular/material/grid-list';
 import { MatListModule } from '@angular/material/list';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
-import { RouterLink } from '@angular/router';
+// import { RouterLink } from '@angular/router';
 import { SettingsService } from '@core';
 import { MtxAlertModule } from '@ng-matero/extensions/alert';
 import { MtxProgressModule } from '@ng-matero/extensions/progress';
@@ -28,7 +28,7 @@ import { DashboardService } from './dashboard.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [DashboardService],
   imports: [
-    RouterLink,
+    // RouterLink,
     MatButtonModule,
     MatCardModule,
     MatChipsModule,
