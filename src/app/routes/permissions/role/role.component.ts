@@ -1,5 +1,5 @@
 import { JsonPipe } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
@@ -12,13 +12,14 @@ import { PageHeaderComponent } from '@shared';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTableModule } from '@angular/material/table';
 import { MtxGridColumn, MtxGridModule } from '@ng-matero/extensions/grid';
 import { TranslateService } from '@ngx-translate/core';
 import { MtxDialog } from '@ng-matero/extensions/dialog';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 @Component({
   selector: 'app-permissions-role-switching',
@@ -38,28 +39,35 @@ import { MtxDialog } from '@ng-matero/extensions/dialog';
     MatDialogModule,
     MatFormFieldModule,
     MatInputModule,
-
+    MatSlideToggleModule,
     MtxGridModule,
   ],
 })
 export class PermissionsRoleComponent implements OnInit, OnDestroy {
+  @ViewChild('roleDialog') roleDialog: any;
+  private readonly _destroy$ = new Subject<void>();
+  
   private readonly rolesSrv = inject(NgxRolesService);
   private readonly permissionsSrv = inject(NgxPermissionsService);
+  private readonly dialog = inject(MatDialog);
+  private readonly translate = inject(TranslateService);
 
   currentRole = '';
-
   currentPermissions: string[] = [];
-
-  permissionsOfRole: Record<string, string[]> = {
-    ADMIN: ['canAdd', 'canDelete', 'canEdit', 'canRead'],
-    MANAGER: ['canAdd', 'canEdit', 'canRead'],
-    GUEST: ['canRead'],
+  isEditMode = false;
+  roleForm: any = {
+    name: '',
+    description: '',
+    permissions: []
   };
 
-  private readonly _destroy$ = new Subject<void>();
-  private readonly translate = inject(TranslateService);
-  //private readonly dataSrv = inject(TablesDataService);
-  private readonly dialog = inject(MtxDialog);
+  availablePermissions = [
+    { id: 'canAdd', name: 'Add', description: 'Can add items' },
+    { id: 'canDelete', name: 'Delete', description: 'Can delete items' },
+    { id: 'canEdit', name: 'Edit', description: 'Can edit items' },
+    { id: 'canRead', name: 'Read', description: 'Can read items' },
+  ];
+
   roles: {
     id: string;
     name: string;
@@ -99,23 +107,17 @@ export class PermissionsRoleComponent implements OnInit, OnDestroy {
     },
   ];
 
-  // Add this property to fix the template error
-  isEditMode = false; // Add this property to fix the error
-  roleForm: any = {}; // Add this property to fix the compile error
-
   columns: MtxGridColumn[] = [
     {
       header: this.translate.stream('name'),
       field: 'name',
       sortable: true,
       disabled: true,
-      //   minWidth: 100,
       width: '100px',
     },
     {
       header: this.translate.stream('description'),
       field: 'description',
-      //   minWidth: 100,
     },
     {
       header: this.translate.stream('operation'),
@@ -148,7 +150,6 @@ export class PermissionsRoleComponent implements OnInit, OnDestroy {
   ];
 
   isLoading = false;
-
   multiSelectable = false;
   rowSelectable = false;
   hideRowSelectionCheckbox = false;
@@ -161,35 +162,84 @@ export class PermissionsRoleComponent implements OnInit, OnDestroy {
   showPaginator = true;
   expandable = false;
   columnResizable = false;
+
   ngOnInit() {
     this.currentRole = Object.keys(this.rolesSrv.getRoles())[0];
     this.currentPermissions = Object.keys(this.permissionsSrv.getPermissions());
-
-    this.rolesSrv.roles$.pipe(takeUntil(this._destroy$)).subscribe(roles => {
-      console.log(roles);
-    });
-    this.permissionsSrv.permissions$.pipe(takeUntil(this._destroy$)).subscribe(permissions => {
-      console.log(permissions);
-    });
   }
 
-  // Add this method to handle editing a role
-  editRole(role: any): void {
-    this.isEditMode = true;
-    this.roleForm = { ...role };
-    // Open the dialog here if needed, e.g.:
-    // this.dialog.open(this.roleDialog);
-  }
   openAddRoleDialog(): void {
-    // Implement dialog opening logic here, e.g. using MatDialog
-    // Example:
-    // this.dialog.open(this.roleDialog);
+    this.isEditMode = false;
+    this.roleForm = {
+      name: '',
+      description: '',
+      permissions: []
+    };
+    
+    const dialogRef = this.dialog.open(this.roleDialog, {
+      width: '500px',
+      data: { isEditMode: this.isEditMode, roleForm: this.roleForm }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.saveRole(result);
+      }
+    });
   }
 
-  edit(value: any) {}
+  edit(role: any): void {
+    this.isEditMode = true;
+    this.roleForm = {
+      ...role,
+      permissions: [...role.permissions]
+    };
+    
+    const dialogRef = this.dialog.open(this.roleDialog, {
+      width: '500px',
+      data: { isEditMode: this.isEditMode, roleForm: this.roleForm }
+    });
 
-  delete(value: any) {
-    this.dialog.alert(`You have deleted ${value.position}!`);
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.saveRole(result);
+      }
+    });
+  }
+
+  delete(role: any): void {
+    const index = this.roles.findIndex(r => r.id === role.id);
+    if (index > -1) {
+      this.roles.splice(index, 1);
+    }
+  }
+
+  saveRole(roleData: any): void {
+    if (this.isEditMode) {
+      const index = this.roles.findIndex(r => r.id === roleData.id);
+      if (index > -1) {
+        this.roles[index] = roleData;
+      }
+    } else {
+      const newRole = {
+        ...roleData,
+        id: (this.roles.length + 1).toString()
+      };
+      this.roles.push(newRole);
+    }
+  }
+
+  togglePermission(permission: any): void {
+    const index = this.roleForm.permissions.findIndex((p: any) => p.id === permission.id);
+    if (index > -1) {
+      this.roleForm.permissions.splice(index, 1);
+    } else {
+      this.roleForm.permissions.push(permission);
+    }
+  }
+
+  isPermissionSelected(permissionId: string): boolean {
+    return this.roleForm.permissions.some((p: any) => p.id === permissionId);
   }
 
   changeSelect(e: any) {
@@ -199,24 +249,9 @@ export class PermissionsRoleComponent implements OnInit, OnDestroy {
   changeSort(e: any) {
     console.log(e);
   }
-  saveRole(): void {
-    // Implement your save logic here, e.g., call a service or update the roles array
-    // Example:
-    // if (this.isEditMode) {
-    //   // Update existing role
-    // } else {
-    //   // Add new role
-    // }
-    // Close dialog if using MatDialogRef
-  }
+
   ngOnDestroy() {
     this._destroy$.next();
     this._destroy$.complete();
-  }
-
-  onPermissionChange() {
-    this.currentPermissions = this.permissionsOfRole[this.currentRole];
-    this.rolesSrv.flushRolesAndPermissions();
-    this.rolesSrv.addRoleWithPermissions(this.currentRole, this.currentPermissions);
   }
 }
