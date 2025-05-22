@@ -40,6 +40,34 @@
         ]
       }
     },
+     {
+      "route": "purchase",
+      "name": "purchase",
+      "type": "sub",
+      "icon": "purchase_2",
+      "children": [
+        {
+          "route": "purchase",
+          "name": "Purhcase",
+          "type": "link",
+          "permissions": {
+            "only": [
+              "product:read"
+            ]
+          }
+        },
+        {
+          "route": "category",
+          "name": "Category",
+          "type": "link",
+          "permissions": {
+            "only": [
+              "product:read"
+            ]
+          }
+        }
+      ]
+    },
     {
       "route": "inventory",
       "name": "Inventory",
