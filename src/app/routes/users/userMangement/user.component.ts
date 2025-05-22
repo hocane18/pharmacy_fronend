@@ -225,7 +225,10 @@ export class UserComponent implements OnInit, OnDestroy {
   edit(value: any) {
     this.openAddRoleDialog();
   }
-
+  onSubmit() {
+    // Handle form submission
+    console.log(this.userModel);
+  }
   delete(value: any) {
     // this.dialog.alert(`You have deleted ${value.position}!`);
   }
