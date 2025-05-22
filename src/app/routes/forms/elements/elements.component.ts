@@ -44,35 +44,24 @@ export class FormsElementsComponent implements OnInit, OnDestroy {
   private readonly translate = inject(TranslateService);
 
   q = {
-    username: '',
+    name: '',
     email: '',
-    gender: '',
+    phone: '',
+    role: 'cashier'
   };
 
   reactiveForm1 = this.fb.nonNullable.group({
-    username: ['', [Validators.required]],
-    gender: ['', [Validators.required]],
-    mobile: ['', [Validators.required]],
+    name: ['', [Validators.required]],
     email: ['', [Validators.required, Validators.email]],
-    city: [''],
-    address: [''],
-    company: [''],
-    tele: [''],
-    website: [''],
-    date: [''],
+    phone: ['', [Validators.required]],
+    role: [{ value: 'cashier', disabled: true }],
   });
 
   reactiveForm2 = this.fb.nonNullable.group({
-    username: ['', [Validators.required]],
-    gender: ['', [Validators.required]],
-    mobile: ['', [Validators.required]],
+    name: ['', [Validators.required]],
     email: ['', [Validators.required, Validators.email]],
-    city: [''],
-    address: [''],
-    company: [''],
-    tele: [''],
-    website: [''],
-    date: [''],
+    phone: ['', [Validators.required]],
+    role: [{ value: 'cashier', disabled: true }],
   });
 
   private translateSubscription = Subscription.EMPTY;

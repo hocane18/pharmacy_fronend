@@ -5,10 +5,8 @@
       "name": "dashboard",
       "type": "link",
       "icon": "dashboard"
-     
     },
-   
-     {
+    {
       "route": "purchase",
       "name": "purchase",
       "type": "sub",
@@ -16,7 +14,7 @@
       "children": [
         {
           "route": "purchaseMagement",
-          "name": "Purhcase Magement",
+          "name": "Purchase Management",
           "type": "link",
           "permissions": {
             "only": [
@@ -24,7 +22,6 @@
             ]
           }
         }
-      
       ]
     },
     {
@@ -34,8 +31,8 @@
       "icon": "shopping_cart",
       "children": [
         {
-          "route": "salemagement",
-          "name": "Sale Magement",
+          "route": "salemanagement",
+          "name": "Sale Management",
           "type": "link",
           "permissions": {
             "only": [
@@ -43,7 +40,6 @@
             ]
           }
         }
-      
       ]
     },
     {
@@ -62,7 +58,6 @@
             ]
           }
         }
-      
       ]
     },
     {
@@ -143,8 +138,6 @@
           }
     }
     ,
- 
-
     {
       "route": "profile",
       "name": "profile",
@@ -159,8 +152,5 @@
         }
       ]
     }
-    
-   
-    
   ]
 }

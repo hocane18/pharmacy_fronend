@@ -20,7 +20,7 @@
       <button mat-raised-button color="primary" (click)="openAddPurchaseDialog()">
         <mat-icon>add</mat-icon>
         Add Purchase
-      </button>
+    </button>
     </div>
   </div>
 </div>
@@ -45,33 +45,33 @@
   <mat-card-header>
     <mat-card-title>Purchases</mat-card-title>
   </mat-card-header>
-  <mat-card-content>
-    <mtx-grid
+    <mat-card-content>
+<mtx-grid
       [data]="filteredPurchases"
-      [columns]="columns"
-      [loading]="isLoading"
-      [columnResizable]="columnResizable"
-      [multiSelectable]="multiSelectable"
-      [rowSelectable]="rowSelectable"
-      [hideRowSelectionCheckbox]="hideRowSelectionCheckbox"
-      [rowHover]="rowHover"
-      [rowStriped]="rowStriped"
-      [showToolbar]="showToolbar"
+  [columns]="columns"
+  [loading]="isLoading"
+  [columnResizable]="columnResizable"
+  [multiSelectable]="multiSelectable"
+  [rowSelectable]="rowSelectable"
+  [hideRowSelectionCheckbox]="hideRowSelectionCheckbox"
+  [rowHover]="rowHover"
+  [rowStriped]="rowStriped"
+  [showToolbar]="showToolbar"
       [toolbarTitle]="'Purchase List'"
-      [columnHideable]="columnHideable"
-      [columnSortable]="columnSortable"
-      [columnPinnable]="columnPinnable"
-      [expandable]="expandable"
-      [expansionTemplate]="expansionTpl"
-      [pageOnFront]="showPaginator"
-      [showPaginator]="showPaginator"
-      [pageSizeOptions]="[5, 10, 50, 100]"
-      [pageIndex]="0"
-      [pageSize]="5"
-      (sortChange)="changeSort($event)"
-      (selectionChange)="changeSelect($event)"
-    />
-    <ng-template #expansionTpl let-row>
+  [columnHideable]="columnHideable"
+  [columnSortable]="columnSortable"
+  [columnPinnable]="columnPinnable"
+  [expandable]="expandable"
+  [expansionTemplate]="expansionTpl"
+  [pageOnFront]="showPaginator"
+  [showPaginator]="showPaginator"
+  [pageSizeOptions]="[5, 10, 50, 100]"
+  [pageIndex]="0"
+  [pageSize]="5"
+  (sortChange)="changeSort($event)"
+  (selectionChange)="changeSelect($event)"
+/>
+<ng-template #expansionTpl let-row>
       <div class="purchase-details">
         <div class="purchase-info">
           <p><strong>Supplier:</strong> {{ getSupplierName(row.supplierId) }}</p>
@@ -81,8 +81,8 @@
           <p><strong>Purchase Date:</strong> {{ row.purchaseDate | date }}</p>
         </div>
       </div>
-    </ng-template>
-  </mat-card-content>
+</ng-template>
+    </mat-card-content>
 </mat-card>
 
 <!-- Purchase Items Dialog -->
@@ -194,7 +194,7 @@
 <!-- Quick Add Supplier Dialog -->
 <ng-template #quickAddSupplierDialog>
   <h2 mat-dialog-title>Add New Supplier</h2>
-  <mat-dialog-content>
+    <mat-dialog-content>
     <div class="supplier-form">
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Name</mat-label>
@@ -204,12 +204,12 @@
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Phone</mat-label>
         <input matInput [(ngModel)]="supplierForm.phone" required>
-      </mat-form-field>
+            </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Email</mat-label>
         <input matInput [(ngModel)]="supplierForm.email" type="email" required>
-      </mat-form-field>
+            </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Address</mat-label>
@@ -255,8 +255,8 @@
             <span class="label">Total Amount:</span>
             <span class="value">${{ dialogData.purchase.totalAmount.toFixed(2) }}</span>
           </div>
-        </div>
-      </div>
+                            </div>
+                        </div>
 
       <div class="purchase-items-section">
         <h3>Purchase Items</h3>
@@ -268,8 +268,8 @@
           [pageSize]="5"
           [pageSizeOptions]="[5, 10, 25, 50]">
         </mtx-grid>
-      </div>
-    </div>
+                </div>
+            </div>
   </mat-dialog-content>
   <mat-dialog-actions align="end">
     <button mat-button mat-dialog-close>Close</button>
@@ -301,9 +301,9 @@
         <textarea matInput [(ngModel)]="supplierForm.address" required rows="3"></textarea>
       </mat-form-field>
     </div>
-  </mat-dialog-content>
-  <mat-dialog-actions align="end">
-    <button mat-button mat-dialog-close>Cancel</button>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+        <button mat-button mat-dialog-close>Cancel</button>
     <button mat-raised-button color="primary" [mat-dialog-close]="supplierForm">Save</button>
-  </mat-dialog-actions>
+    </mat-dialog-actions>
 </ng-template>
