@@ -179,6 +179,19 @@ export class UserComponent implements OnInit, OnDestroy {
   }
   onProfileSelect(event: any): void {
     // Handle the profile selection here
+    const file: File = event.target?.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64String = (reader.result as string).split(',')[1];
+        // You can now use base64String as needed
+        console.log('Base64:', base64String);
+        // For example, assign to a property:
+        // this.userModel.profileImage = base64String;
+      };
+      reader.readAsDataURL(file);
+    }
+
     console.log('Profile selected:', event);
   }
 
@@ -209,7 +222,9 @@ export class UserComponent implements OnInit, OnDestroy {
     });
   }
 
-  edit(value: any) {}
+  edit(value: any) {
+    this.openAddRoleDialog();
+  }
 
   delete(value: any) {
     // this.dialog.alert(`You have deleted ${value.position}!`);
