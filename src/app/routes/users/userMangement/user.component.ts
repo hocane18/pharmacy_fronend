@@ -1,5 +1,5 @@
 import { JsonPipe } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, ViewChild, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
@@ -12,13 +12,16 @@ import { PageHeaderComponent } from '@shared';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTableModule } from '@angular/material/table';
 import { MtxGridColumn, MtxGridModule } from '@ng-matero/extensions/grid';
 import { TranslateService } from '@ngx-translate/core';
 import { MtxDialog } from '@ng-matero/extensions/dialog';
+
+import { MatSelectModule } from '@angular/material/select';
+import { MatOptionModule } from '@angular/material/core';
 
 @Component({
   selector: 'app-permissions-role-switching',
@@ -37,19 +40,21 @@ import { MtxDialog } from '@ng-matero/extensions/dialog';
     MatIconModule,
     MatDialogModule,
     MatFormFieldModule,
-    MatInputModule,
 
+    MatInputModule,
+    MatSelectModule,
+    MatOptionModule,
     MtxGridModule,
   ],
 })
 export class UserComponent implements OnInit, OnDestroy {
   private readonly rolesSrv = inject(NgxRolesService);
   private readonly permissionsSrv = inject(NgxPermissionsService);
-
+  @ViewChild('userDialog') userDialog: any;
   currentRole = '';
-
+  rolesList: string[] = ['Admin', 'User', 'Manager'];
   currentPermissions: string[] = [];
-
+  userModel: any = {}; // Add this line
   permissionsOfRole: Record<string, string[]> = {
     ADMIN: ['canAdd', 'canDelete', 'canEdit', 'canRead'],
     MANAGER: ['canAdd', 'canEdit', 'canRead'],
@@ -59,7 +64,7 @@ export class UserComponent implements OnInit, OnDestroy {
   private readonly _destroy$ = new Subject<void>();
   private readonly translate = inject(TranslateService);
   //private readonly dataSrv = inject(TablesDataService);
-  private readonly dialog = inject(MtxDialog);
+  private readonly dialog = inject(MatDialog);
   roles: {
     id: string;
     name: string;
@@ -172,6 +177,10 @@ export class UserComponent implements OnInit, OnDestroy {
       console.log(permissions);
     });
   }
+  onProfileSelect(event: any): void {
+    // Handle the profile selection here
+    console.log('Profile selected:', event);
+  }
 
   // Add this method to handle editing a role
   editRole(role: any): void {
@@ -181,15 +190,29 @@ export class UserComponent implements OnInit, OnDestroy {
     // this.dialog.open(this.roleDialog);
   }
   openAddRoleDialog(): void {
-    // Implement dialog opening logic here, e.g. using MatDialog
-    // Example:
-    // this.dialog.open(this.roleDialog);
+    this.isEditMode = false;
+    this.roleForm = {
+      name: '',
+      description: '',
+      permissions: [],
+    };
+
+    const dialogRef = this.dialog.open(this.userDialog, {
+      width: '500px',
+      data: { isEditMode: this.isEditMode, roleForm: this.roleForm },
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.saveUser();
+      }
+    });
   }
 
   edit(value: any) {}
 
   delete(value: any) {
-    this.dialog.alert(`You have deleted ${value.position}!`);
+    // this.dialog.alert(`You have deleted ${value.position}!`);
   }
 
   changeSelect(e: any) {
@@ -199,7 +222,7 @@ export class UserComponent implements OnInit, OnDestroy {
   changeSort(e: any) {
     console.log(e);
   }
-  saveRole(): void {
+  saveUser(): void {
     // Implement your save logic here, e.g., call a service or update the roles array
     // Example:
     // if (this.isEditMode) {
