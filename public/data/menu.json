@@ -47,7 +47,7 @@
       "icon": "inventory_2",
       "children": [
         {
-          "route": "product",
+          "route": "products",
           "name": "Product",
           "type": "link",
           "permissions": {
@@ -118,44 +118,7 @@
           }
     }
     ,
-    {
-      "route": "products",
-      "name": "Products",
-      "type": "sub",
-      "icon": "category",
-      "children": [
-        {
-          "route": "list",
-          "name": "Product List",
-          "type": "link",
-          "permissions": {
-            "only": [
-              "product:read"
-            ]
-          }
-        },
-        {
-          "route": "add",
-          "name": "Add Product",
-          "type": "link",
-          "permissions": {
-            "only": [
-              "product:add"
-            ]
-          }
-        },
-        {
-          "route": "edit",
-          "name": "Edit Product",
-          "type": "link",
-          "permissions": {
-            "only": [
-              "product:edit"
-            ]
-          }
-        }
-      ]
-    },
+    
     {
       "route": "material",
       "name": "material",
