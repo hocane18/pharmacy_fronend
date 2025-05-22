@@ -68,7 +68,34 @@
         }
       ]
     },
-    
+    {
+      "route": "permissions",
+      "name": "Permission-magement",
+      "type": "sub",
+      "icon": "inventory_2",
+      "children": [
+        {
+          "route": "role",
+          "name": "role",
+          "type": "link",
+          "permissions": {
+            "only": [
+              "product:read"
+            ]
+          }
+        },
+        {
+          "route": "permissionList",
+          "name": "permission",
+          "type": "link",
+          "permissions": {
+            "only": [
+              "product:read"
+            ]
+          }
+        }
+      ]
+    },
     {
       "route": "products",
       "name": "Products",
