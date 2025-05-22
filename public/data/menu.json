@@ -47,18 +47,8 @@
       "icon": "purchase_2",
       "children": [
         {
-          "route": "purchase",
-          "name": "Purhcase",
-          "type": "link",
-          "permissions": {
-            "only": [
-              "product:read"
-            ]
-          }
-        },
-        {
-          "route": "category",
-          "name": "Category",
+          "route": "purchaseMagement",
+          "name": "Purhcase Magement",
           "type": "link",
           "permissions": {
             "only": [
@@ -66,6 +56,7 @@
             ]
           }
         }
+      
       ]
     },
     {
