@@ -95,7 +95,29 @@
           }
         }
       ]
-    },
+    },{
+      "route": "users",
+          "name": "User magement",
+            "type": "sub",
+            "icon": "person",
+             "children": [
+        {
+          "route": "user",
+          "name": "user list",
+          "type": "link",
+          "permissions": {
+            "only": [
+              "product:read"
+            ]
+          }
+        }],
+          "permissions": {
+            "only": [
+              "product:read"
+            ]
+          }
+    }
+    ,
     {
       "route": "products",
       "name": "Products",
