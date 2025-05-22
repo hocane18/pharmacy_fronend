@@ -79,6 +79,25 @@
       ]
     },
     {
+      "route": "quotation",
+      "name": "quotation",
+      "type": "sub",
+      "icon": "sale_2",
+      "children": [
+        {
+          "route": "quotationmagement",
+          "name": "Quotation Magement",
+          "type": "link",
+          "permissions": {
+            "only": [
+              "product:read"
+            ]
+          }
+        }
+      
+      ]
+    },
+    {
       "route": "inventory",
       "name": "Inventory",
       "type": "sub",
