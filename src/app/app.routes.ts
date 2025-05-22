@@ -46,7 +46,7 @@ export const routes: Routes = [
         loadChildren: () => import('./routes/quotation/quotation.routes').then(m => m.routes),
       },
       {
-        path: 'users',
+        path: 'usersmagement',
         loadChildren: () => import('./routes/users/user.routes').then(m => m.routes),
       },
       {

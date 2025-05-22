@@ -121,7 +121,7 @@
         }
       ]
     },{
-      "route": "users",
+      "route": "usersmagement",
           "name": "User magement",
             "type": "sub",
             "icon": "person",
@@ -151,11 +151,7 @@
       "type": "sub",
       "icon": "person",
       "children": [
-        {
-          "route": "overview",
-          "name": "overview",
-          "type": "link"
-        },
+      
         {
           "route": "settings",
           "name": "settings",
