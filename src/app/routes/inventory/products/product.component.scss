@@ -1,0 +1,55 @@
+.product-actions {
+  margin: 16px 0;
+}
+
+.product-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 0;
+
+  .form-row {
+    display: flex;
+    gap: 16px;
+
+    mat-form-field {
+      flex: 1;
+    }
+  }
+}
+
+.product-details {
+  display: flex;
+  gap: 24px;
+  padding: 16px;
+
+  .product-image {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+
+  .product-info {
+    flex: 1;
+
+    p {
+      margin: 8px 0;
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.87);
+
+      strong {
+        color: rgba(0, 0, 0, 0.6);
+        margin-right: 8px;
+      }
+    }
+  }
+}
+
+::ng-deep {
+  .mat-mdc-dialog-container {
+    .mat-mdc-dialog-content {
+      max-height: 70vh;
+    }
+  }
+}
