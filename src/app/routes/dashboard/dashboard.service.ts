@@ -114,11 +114,11 @@ export class DashboardService {
       },
       series: [
         {
-          name: 'UV',
+          name: 'Sale',
           data: [31, 40, 28, 51, 42, 109, 100],
         },
         {
-          name: 'Download',
+          name: 'Purchase',
           data: [11, 32, 45, 32, 34, 52, 41],
         },
       ],
