@@ -21,6 +21,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-product',
@@ -49,11 +50,15 @@ import { MatSelectModule } from '@angular/material/select';
 })
 export class ProductComponent implements OnInit, OnDestroy {
   @ViewChild('productDialog') productDialog: any;
+  @ViewChild('fileInput') fileInput: any;
   private readonly _destroy$ = new Subject<void>();
   private readonly dialog = inject(MatDialog);
   private readonly translate = inject(TranslateService);
+  private readonly sanitizer = inject(DomSanitizer);
 
   isEditMode = false;
+  selectedFile: File | null = null;
+  previewUrl: SafeUrl | null = null;
   productForm: any = {
     name: '',
     categoryId: '',
@@ -65,7 +70,7 @@ export class ProductComponent implements OnInit, OnDestroy {
     unit: '',
     expiryDate: null,
     alertQuantity: 0,
-    imageUrl: '',
+    image: null,
   };
 
   categories = [
@@ -94,13 +99,24 @@ export class ProductComponent implements OnInit, OnDestroy {
       unit: 'pcs',
       expiryDate: new Date('2024-12-31'),
       alertQuantity: 20,
-      imageUrl: 'assets/images/products/paracetamol.jpg',
+      image: null,
       createdAt: new Date('2024-01-01'),
     },
     // Add more sample products as needed
   ];
 
   columns: MtxGridColumn[] = [
+    {
+      header: 'Image',
+      field: 'image',
+      width: '100px',
+      formatter: (row: any) => {
+        if (row.image) {
+          return `<img src="${row.image}" alt="Product" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">`;
+        }
+        return '';
+      },
+    },
     {
       header: 'ID',
       field: 'id',
@@ -222,8 +238,19 @@ export class ProductComponent implements OnInit, OnDestroy {
 
   ngOnInit() {}
 
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;
+      this.previewUrl = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(file));
+      this.productForm.image = this.previewUrl;
+    }
+  }
+
   openAddProductDialog(): void {
     this.isEditMode = false;
+    this.selectedFile = null;
+    this.previewUrl = null;
     this.productForm = {
       name: '',
       categoryId: '',
@@ -235,7 +262,7 @@ export class ProductComponent implements OnInit, OnDestroy {
       unit: '',
       expiryDate: null,
       alertQuantity: 0,
-      imageUrl: '',
+      image: null,
     };
 
     const dialogRef = this.dialog.open(this.productDialog, {
@@ -253,6 +280,7 @@ export class ProductComponent implements OnInit, OnDestroy {
   edit(product: any): void {
     this.isEditMode = true;
     this.productForm = { ...product };
+    this.previewUrl = product.image;
 
     const dialogRef = this.dialog.open(this.productDialog, {
       width: '600px',
@@ -277,13 +305,17 @@ export class ProductComponent implements OnInit, OnDestroy {
     if (this.isEditMode) {
       const index = this.products.findIndex(p => p.id === productData.id);
       if (index > -1) {
-        this.products[index] = productData;
+        this.products[index] = {
+          ...productData,
+          image: this.previewUrl
+        };
       }
     } else {
       const newProduct = {
         ...productData,
         id: (this.products.length + 1).toString(),
         createdAt: new Date(),
+        image: this.previewUrl
       };
       this.products.push(newProduct);
     }
