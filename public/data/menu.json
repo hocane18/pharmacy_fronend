@@ -68,34 +68,7 @@
         }
       ]
     },
-    {
-      "route": "permissions",
-      "name": "Permission-magement",
-      "type": "sub",
-      "icon": "inventory_2",
-      "children": [
-        {
-          "route": "role",
-          "name": "role",
-          "type": "link",
-          "permissions": {
-            "only": [
-              "product:read"
-            ]
-          }
-        },
-        {
-          "route": "permission",
-          "name": "permission",
-          "type": "link",
-          "permissions": {
-            "only": [
-              "product:read"
-            ]
-          }
-        }
-      ]
-    },
+    
     {
       "route": "products",
       "name": "Products",
@@ -370,11 +343,32 @@
       "name": "permissions",
       "type": "sub",
       "icon": "lock",
+     
       "children": [
         {
           "route": "role-switching",
           "name": "role-switching",
           "type": "link"
+        },
+         {
+          "route": "role",
+          "name": "role",
+          "type": "link",
+          "permissions": {
+            "only": [
+              "product:read"
+            ]
+          }
+        },
+        {
+          "route": "permissionList",
+          "name": "permission",
+          "type": "link",
+          "permissions": {
+            "only": [
+              "product:read"
+            ]
+          }
         },
         {
           "route": "route-guard",

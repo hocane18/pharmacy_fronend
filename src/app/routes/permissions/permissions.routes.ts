@@ -4,10 +4,13 @@ import { PermissionsRoleSwitchingComponent } from './role-switching/role-switchi
 import { PermissionsRouteGuardComponent } from './route-guard/route-guard.component';
 import { PermissionsTestComponent } from './test/test.component';
 import { PermissionsRoleComponent } from './role/role.component';
+import { permission } from 'process';
+import { PermissionViewComponent } from './permissionView/permissionview.component';
 
 export const routes: Routes = [
   { path: 'role-switching', component: PermissionsRoleSwitchingComponent },
   { path: 'role', component: PermissionsRoleComponent },
+  { path: 'permissionList', component: PermissionViewComponent },
 
   {
     path: 'route-guard',
