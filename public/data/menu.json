@@ -60,6 +60,25 @@
       ]
     },
     {
+      "route": "sales",
+      "name": "Sale",
+      "type": "sub",
+      "icon": "sale_2",
+      "children": [
+        {
+          "route": "salemagement",
+          "name": "Sale Magement",
+          "type": "link",
+          "permissions": {
+            "only": [
+              "product:read"
+            ]
+          }
+        }
+      
+      ]
+    },
+    {
       "route": "inventory",
       "name": "Inventory",
       "type": "sub",
