@@ -135,18 +135,18 @@ export class PermissionsRoleComponent implements OnInit, OnDestroy {
           tooltip: this.translate.stream('edit'),
           click: record => this.edit(record),
         },
-        {
-          type: 'icon',
-          color: 'warn',
-          icon: 'delete',
-          tooltip: this.translate.stream('delete'),
-          pop: {
-            title: this.translate.stream('confirm_delete'),
-            closeText: this.translate.stream('close'),
-            okText: this.translate.stream('ok'),
-          },
-          click: record => this.delete(record),
-        },
+        // ,{
+        //   type: 'icon',
+        //   color: 'warn',
+        //   icon: 'delete',
+        //   tooltip: this.translate.stream('delete'),
+        //   pop: {
+        //     title: this.translate.stream('confirm_delete'),
+        //     closeText: this.translate.stream('close'),
+        //     okText: this.translate.stream('ok'),
+        //   },
+        //   click: record => this.delete(record),
+        // },
       ],
     },
   ];
@@ -235,6 +235,7 @@ export class PermissionsRoleComponent implements OnInit, OnDestroy {
   }
   edit(role: any): void {
     this.isEditMode = true;
+    console.log(role);
     this.roleForm = {
       ...role,
       permissions: [...role.permissions],
@@ -279,9 +280,13 @@ export class PermissionsRoleComponent implements OnInit, OnDestroy {
       body: JSON.stringify(mappedRoleData),
     })
       .then(async res => {
-        const data = await res.json();
+        let data = null;
+        const contentType = res.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          data = await res.json();
+        }
         if (res.ok) {
-          this.loadRoles();
+          //this.loadRoles();
           this.snackBar.open('Role added successfully!', 'Close', { duration: 2000 });
         } else {
           // Show error message from API if available
@@ -315,19 +320,22 @@ export class PermissionsRoleComponent implements OnInit, OnDestroy {
       body: JSON.stringify(mappedRoleData),
     })
       .then(async res => {
-        const data = await res.json();
-        console.log(data);
+        let data = null;
+        const contentType = res.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          data = await res.json();
+        }
         if (res.ok) {
           this.snackBar.open('Role updated successfully!', 'Close', { duration: 2000 });
           this.loadRoles();
-          this.snackBar.open('Role updated successfully!', 'Close', { duration: 2000 });
         } else {
           // Show error message from API if available
-          this.snackBar.open(data?.message || 'Failed to update role', 'Close', { duration: 2000 });
+          // this.snackBar.open(data?.message || 'Failed to update role', 'Close', { duration: 2000 });
         }
         this.isLoading = false;
       })
-      .catch(() => {
+      .catch(err => {
+        console.log(err);
         this.snackBar.open('Failed to update role', 'Close', { duration: 2000 });
         this.isLoading = false;
       });
