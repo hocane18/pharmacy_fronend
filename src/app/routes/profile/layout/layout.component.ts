@@ -4,41 +4,76 @@ import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 
 import { AuthService, User } from '@core';
-import { TranslateModule } from '@ngx-translate/core';
 import { PageHeaderComponent } from '@shared';
 
 @Component({
   selector: 'app-profile-layout',
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.scss',
+  standalone: true,
   imports: [
-    // RouterLink,
-    RouterOutlet,
     MatButtonModule,
     MatCardModule,
     MatDividerModule,
-    MatListModule,
     MatIconModule,
-    PageHeaderComponent,
+    MatListModule,
     TranslateModule,
+    PageHeaderComponent,
+    RouterOutlet,
   ],
 })
 export class ProfileLayoutComponent implements OnInit {
-  private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
 
-  user!: User;
+  user: Partial<User> = {
+    name: '',
+    avatar: '',
+  };
 
-  ngOnInit(): void {
-    this.auth.user().subscribe(user => (this.user = user));
+  ngOnInit() {
+    this.authService.user().subscribe(user => {
+      if (user) {
+        this.user.name = user.name;
+        this.user.avatar = user.avatar;
+      }
+    });
   }
 
   logout() {
-    this.auth.logout().subscribe(() => {
-      this.router.navigateByUrl('/auth/login');
-    });
+    this.authService.logout();
+    this.router.navigate(['/auth/login']);
+  }
+
+  onFileSelected(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (file) {
+      // Create a FileReader to read the image
+      const reader = new FileReader();
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        if (e.target?.result) {
+          // Update the avatar preview
+          this.user.avatar = e.target.result as string;
+          
+          // Here you would typically upload the file to your server
+          // For example:
+          // this.authService.updateProfilePicture(file).subscribe(
+          //   response => {
+          //     // Handle successful upload
+          //     console.log('Profile picture updated successfully');
+          //   },
+          //   error => {
+          //     // Handle error
+          //     console.error('Error uploading profile picture:', error);
+          //   }
+          // );
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   }
 }
