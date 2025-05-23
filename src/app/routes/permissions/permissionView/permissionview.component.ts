@@ -7,8 +7,9 @@ import { MatCardModule } from '@angular/material/card';
 import { MtxDialog } from '@ng-matero/extensions/dialog';
 import { MtxGridColumn, MtxGridModule } from '@ng-matero/extensions/grid';
 import { TranslateService } from '@ngx-translate/core';
-
+import { environment } from '@env/environment';
 import { PageHeaderComponent } from '@shared';
+import { is } from 'date-fns/locale';
 
 @Component({
   selector: 'app-table-kitchen-sink',
@@ -42,7 +43,7 @@ export class PermissionViewComponent implements OnInit {
     },
     {
       header: this.translate.stream('Description'),
-      field: 'weight',
+      field: 'module',
       //   minWidth: 100,
     },
   ];
@@ -64,12 +65,8 @@ export class PermissionViewComponent implements OnInit {
 
   ngOnInit() {
     this.list = [];
-    this.list = [
-      { name: 'View Users', weight: 'Allows viewing user list', operation: '' },
-      { name: 'Edit Users', weight: 'Allows editing user details', operation: '' },
-      { name: 'Delete Users', weight: 'Allows deleting users', operation: '' },
-      { name: 'Manage Roles', weight: 'Allows managing user roles', operation: '' },
-    ];
+    this.isLoading = true;
+    this.loadData();
     this.isLoading = false;
   }
 
@@ -79,6 +76,27 @@ export class PermissionViewComponent implements OnInit {
     this.dialog.alert(`You have deleted ${value.position}!`);
   }
 
+  loadData() {
+    this.isLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}RoleAndPermission/permission`;
+    const token = localStorage.getItem('ng-matero-token');
+
+    fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.list = data || [];
+        console.log(this.list);
+        this.isLoading = false;
+      })
+      .catch(() => {
+        this.isLoading = false;
+      });
+  }
   changeSelect(e: any) {
     console.log(e);
   }

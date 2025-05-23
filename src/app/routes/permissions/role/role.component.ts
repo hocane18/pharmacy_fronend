@@ -20,6 +20,8 @@ import { MtxGridColumn, MtxGridModule } from '@ng-matero/extensions/grid';
 import { TranslateService } from '@ngx-translate/core';
 import { MtxDialog } from '@ng-matero/extensions/dialog';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { environment } from '@env/environment';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-permissions-role-switching',
@@ -46,19 +48,19 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 export class PermissionsRoleComponent implements OnInit, OnDestroy {
   @ViewChild('roleDialog') roleDialog: any;
   private readonly _destroy$ = new Subject<void>();
-  
+
   private readonly rolesSrv = inject(NgxRolesService);
   private readonly permissionsSrv = inject(NgxPermissionsService);
   private readonly dialog = inject(MatDialog);
   private readonly translate = inject(TranslateService);
-
+  private readonly snackBar = inject(MatSnackBar);
   currentRole = '';
   currentPermissions: string[] = [];
   isEditMode = false;
   roleForm: any = {
     name: '',
     description: '',
-    permissions: []
+    permissions: [],
   };
 
   availablePermissions = [
@@ -166,6 +168,8 @@ export class PermissionsRoleComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.currentRole = Object.keys(this.rolesSrv.getRoles())[0];
     this.currentPermissions = Object.keys(this.permissionsSrv.getPermissions());
+    this.loadRoles();
+    this.loadPermissions();
   }
 
   openAddRoleDialog(): void {
@@ -173,12 +177,12 @@ export class PermissionsRoleComponent implements OnInit, OnDestroy {
     this.roleForm = {
       name: '',
       description: '',
-      permissions: []
+      permissions: [],
     };
-    
+
     const dialogRef = this.dialog.open(this.roleDialog, {
       width: '500px',
-      data: { isEditMode: this.isEditMode, roleForm: this.roleForm }
+      data: { isEditMode: this.isEditMode, roleForm: this.roleForm },
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -187,17 +191,58 @@ export class PermissionsRoleComponent implements OnInit, OnDestroy {
       }
     });
   }
+  loadRoles() {
+    this.isLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}RoleAndPermission/role`;
+    const token = localStorage.getItem('ng-matero-token');
 
+    fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.roles = data || [];
+        console.log(this.roles);
+        this.isLoading = false;
+      })
+      .catch(() => {
+        this.isLoading = false;
+      });
+  }
+  loadPermissions() {
+    this.isLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}RoleAndPermission/permission`;
+    const token = localStorage.getItem('ng-matero-token');
+
+    fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.availablePermissions = data || [];
+        console.log(this.availablePermissions);
+        this.isLoading = false;
+      })
+      .catch(() => {
+        this.isLoading = false;
+      });
+  }
   edit(role: any): void {
     this.isEditMode = true;
     this.roleForm = {
       ...role,
-      permissions: [...role.permissions]
+      permissions: [...role.permissions],
     };
-    
+
     const dialogRef = this.dialog.open(this.roleDialog, {
       width: '500px',
-      data: { isEditMode: this.isEditMode, roleForm: this.roleForm }
+      data: { isEditMode: this.isEditMode, roleForm: this.roleForm },
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -213,18 +258,94 @@ export class PermissionsRoleComponent implements OnInit, OnDestroy {
       this.roles.splice(index, 1);
     }
   }
-
+  saveRoleToApi(roleData: any) {
+    this.isLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}RoleAndPermission/role`;
+    const token = localStorage.getItem('ng-matero-token');
+    // Map roleData to RoleCreateDto format
+    const mappedRoleData = {
+      name: roleData.name,
+      description: roleData.description,
+      permissionIds: (roleData.permissions || []).map((p: any) =>
+        p.id && Number.isInteger(p.id) ? p.id : parseInt(p.id, 10)
+      ),
+    };
+    fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(mappedRoleData),
+    })
+      .then(async res => {
+        const data = await res.json();
+        if (res.ok) {
+          this.loadRoles();
+          this.snackBar.open('Role added successfully!', 'Close', { duration: 2000 });
+        } else {
+          // Show error message from API if available
+          this.snackBar.open(data?.message || 'Failed to update role', 'Close', { duration: 2000 });
+        }
+        this.isLoading = false;
+      })
+      .catch(() => {
+        this.snackBar.open('Failed to update role', 'Close', { duration: 2000 });
+        this.isLoading = false;
+      });
+  }
+  editRoleToApi(roleData: any) {
+    this.isLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}RoleAndPermission/role/${roleData.id}`;
+    const token = localStorage.getItem('ng-matero-token');
+    // Map roleData to RoleCreateDto format
+    const mappedRoleData = {
+      name: roleData.name,
+      description: roleData.description,
+      permissionIds: (roleData.permissions || []).map((p: any) =>
+        p.id && Number.isInteger(p.id) ? p.id : parseInt(p.id, 10)
+      ),
+    };
+    fetch(apiUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(mappedRoleData),
+    })
+      .then(async res => {
+        const data = await res.json();
+        console.log(data);
+        if (res.ok) {
+          this.snackBar.open('Role updated successfully!', 'Close', { duration: 2000 });
+          this.loadRoles();
+          this.snackBar.open('Role updated successfully!', 'Close', { duration: 2000 });
+        } else {
+          // Show error message from API if available
+          this.snackBar.open(data?.message || 'Failed to update role', 'Close', { duration: 2000 });
+        }
+        this.isLoading = false;
+      })
+      .catch(() => {
+        this.snackBar.open('Failed to update role', 'Close', { duration: 2000 });
+        this.isLoading = false;
+      });
+  }
   saveRole(roleData: any): void {
     if (this.isEditMode) {
       const index = this.roles.findIndex(r => r.id === roleData.id);
       if (index > -1) {
         this.roles[index] = roleData;
+        this.editRoleToApi(roleData);
       }
+      //this.editRoleToApi(roleData);
     } else {
       const newRole = {
         ...roleData,
-        id: (this.roles.length + 1).toString()
+        id: (this.roles.length + 1).toString(),
       };
+      this.saveRoleToApi(newRole);
       this.roles.push(newRole);
     }
   }

@@ -41,7 +41,7 @@ export class TokenService implements OnDestroy {
     return this.refresh$.pipe(share());
   }
 
-  set(token?: Token) {
+  async set(token?: Token) {
     this.save(token);
 
     return this;
@@ -73,6 +73,7 @@ export class TokenService implements OnDestroy {
     if (!token) {
       this.store.remove(this.key);
     } else {
+      console.log(token);
       const value = Object.assign({ access_token: '', token_type: 'Bearer' }, token, {
         exp: token.expires_in ? currentTimestamp() + token.expires_in : null,
       });

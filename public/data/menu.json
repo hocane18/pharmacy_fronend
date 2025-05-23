@@ -18,11 +18,16 @@
           "type": "link",
           "permissions": {
             "only": [
-              "product:read"
+           "product:Get","Product.Add","Product.Edit","Product.Delete"
             ]
           }
         }
-      ]
+      ],
+      "permissions": {
+            "only": [
+              "product:Get","Product.Add","Product.Edit","Product.Delete"
+            ]
+          }
     },
     {
       "route": "sales",
@@ -36,11 +41,16 @@
           "type": "link",
           "permissions": {
             "only": [
-              "product:read"
+              "product:Get","Product.Add","Product.Edit","Product.Delete"
             ]
           }
         }
-      ]
+      ],
+      "permissions": {
+            "only": [
+              "Sale:Get","Sale.Add","Sale.Edit","Sale.Delete"
+            ]
+          }
     },
     {
       "route": "quotation",
@@ -52,13 +62,18 @@
           "route": "quotationmagement",
           "name": "Quotation Magement",
           "type": "link",
-          "permissions": {
+         "permissions": {
             "only": [
-              "product:read"
+              "Sale:Get","Sale.Add","Sale.Edit","Sale.Delete"
             ]
           }
         }
-      ]
+      ],
+      "permissions": {
+            "only": [
+              "Quotation:Get","Quotation.Add","Quotation.Edit","Quotation.Delete"
+            ]
+          }
     },
     {
       "route": "inventory",
@@ -72,7 +87,7 @@
           "type": "link",
           "permissions": {
             "only": [
-              "product:read"
+               "Product:Get","Product.Add","Product.Edit","Product.Delete"
             ]
           }
         },
@@ -82,11 +97,17 @@
           "type": "link",
           "permissions": {
             "only": [
-              "product:read"
+              "Category:Get","Category.Add","Category.Edit","Category.Delete"
             ]
           }
         }
-      ]
+      ],
+        "permissions": {
+            "only": [
+              "Product:Get","Product.Add","Product.Edit","Product.Delete",
+                "Category:Get","Category.Add","Category.Edit","Category.Delete"
+            ]
+          }
     },
     {
       "route": "permissions",
@@ -100,7 +121,7 @@
           "type": "link",
           "permissions": {
             "only": [
-              "product:read"
+             "Role:Get","Role.Add","Role.Edit","Role.Delete"
             ]
           }
         },
@@ -110,11 +131,16 @@
           "type": "link",
           "permissions": {
             "only": [
-              "product:read"
+             "Role:Get","Role.Add","Role.Edit","Role.Delete"
             ]
           }
         }
-      ]
+      ],
+      "permissions": {
+            "only": [
+             "Role:Get","Role.Add","Role.Edit","Role.Delete"
+            ]
+          }
     },{
       "route": "usersmagement",
           "name": "User magement",
@@ -127,13 +153,13 @@
           "type": "link",
           "permissions": {
             "only": [
-              "product:read"
+              "User:Get","User.Add","User.Edit","User.Delete"
             ]
           }
         }],
           "permissions": {
             "only": [
-              "product:read"
+              "User:Get","User.Add","User.Edit","User.Delete"
             ]
           }
     }

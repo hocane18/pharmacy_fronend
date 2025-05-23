@@ -11,10 +11,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatTableModule } from '@angular/material/table';
 import { MtxGridColumn, MtxGridModule } from '@ng-matero/extensions/grid';
 import { TranslateService } from '@ngx-translate/core';
-import { MtxDialog } from '@ng-matero/extensions/dialog';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
@@ -60,7 +58,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
   private readonly translate = inject(TranslateService);
 
   dialogData: any = {
-    purchase: null
+    purchase: null,
   };
 
   isEditMode = false;
@@ -89,9 +87,9 @@ export class PurchaseComponent implements OnInit, OnDestroy {
   };
 
   products = [
-    { id: 1, name: 'Product A', price: 10.00 },
-    { id: 2, name: 'Product B', price: 15.00 },
-    { id: 3, name: 'Product C', price: 20.00 },
+    { id: 1, name: 'Product A', price: 10.0 },
+    { id: 2, name: 'Product B', price: 15.0 },
+    { id: 3, name: 'Product C', price: 20.0 },
   ];
 
   suppliers: Supplier[] = [
@@ -101,7 +99,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       phone: '123-456-7890',
       address: '123 Main St',
       email: 'supplierA@example.com',
-      createdAt: new Date('2024-01-01')
+      createdAt: new Date('2024-01-01'),
     },
     {
       id: 2,
@@ -109,7 +107,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       phone: '234-567-8901',
       address: '456 Oak St',
       email: 'supplierB@example.com',
-      createdAt: new Date('2024-01-02')
+      createdAt: new Date('2024-01-02'),
     },
     {
       id: 3,
@@ -117,8 +115,8 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       phone: '345-678-9012',
       address: '789 Pine St',
       email: 'supplierC@example.com',
-      createdAt: new Date('2024-01-03')
-    }
+      createdAt: new Date('2024-01-03'),
+    },
   ];
 
   users = [
@@ -132,7 +130,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       id: '1',
       supplierId: 1,
       userId: '1',
-      totalAmount: 1500.00,
+      totalAmount: 1500.0,
       invoiceNo: 'INV-001',
       purchaseDate: new Date('2024-03-15'),
       items: [
@@ -141,8 +139,8 @@ export class PurchaseComponent implements OnInit, OnDestroy {
           purchaseId: 1,
           productId: 1,
           quantity: 10,
-          price: 10.00,
-          total: 100.00,
+          price: 10.0,
+          total: 100.0,
         },
       ],
     },
@@ -231,7 +229,8 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       header: 'Purchase Date',
       field: 'purchaseDate',
       width: '120px',
-      formatter: (row: any) => row.purchaseDate ? new Date(row.purchaseDate).toLocaleDateString() : '',
+      formatter: (row: any) =>
+        row.purchaseDate ? new Date(row.purchaseDate).toLocaleDateString() : '',
     },
     {
       header: 'Operation',
@@ -299,7 +298,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       header: 'Created At',
       field: 'createdAt',
       width: '120px',
-      formatter: (row: any) => row.createdAt ? new Date(row.createdAt).toLocaleDateString() : '',
+      formatter: (row: any) => (row.createdAt ? new Date(row.createdAt).toLocaleDateString() : ''),
     },
     {
       header: 'Operation',
@@ -349,16 +348,11 @@ export class PurchaseComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.filteredPurchases = [...this.purchases];
-    
+
     // Setup search with debounce
-    this.searchSubject
-      .pipe(
-        debounceTime(300),
-        distinctUntilChanged()
-      )
-      .subscribe(searchText => {
-        this.filterPurchases(searchText);
-      });
+    this.searchSubject.pipe(debounceTime(300), distinctUntilChanged()).subscribe(searchText => {
+      this.filterPurchases(searchText);
+    });
   }
 
   onSearchChange(searchText: string): void {

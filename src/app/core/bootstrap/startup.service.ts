@@ -18,6 +18,7 @@ export class StartupService {
    * such as permissions and roles.
    */
   load() {
+    console.log('load');
     return new Promise<void>((resolve, reject) => {
       this.authService
         .change()
@@ -27,21 +28,31 @@ export class StartupService {
           tap(menu => this.setMenu(menu))
         )
         .subscribe({
-          next: () => resolve(),
-          error: () => resolve(),
+          next: () => {
+            console.log('notify');
+            resolve();
+          },
+          error: err => {
+            console.log('notify' + err);
+            resolve();
+          },
         });
     });
   }
 
   private setMenu(menu: Menu[]) {
+    console.log('setMenu', menu);
     this.menuService.addNamespace(menu, 'menu');
     this.menuService.set(menu);
   }
 
   private setPermissions(user: User) {
+    console.log('setPermissions', user);
     // In a real app, you should get permissions and roles from the user information.
-    const permissions = ['canAdd', 'canDelete', 'canEdit', 'canRead','product:read'];
-    
+    const permissions = user.permissions || [];
+    // ['canAdd', 'canDelete', 'canEdit', 'canRead','product:read'];
+    console.log('setPermissions', permissions);
+
     this.permissonsService.loadPermissions(permissions);
     this.rolesService.flushRoles();
     this.rolesService.addRoles({ ADMIN: permissions });
