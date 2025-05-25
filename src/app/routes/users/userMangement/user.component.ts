@@ -79,6 +79,7 @@ export class UserComponent implements OnInit, OnDestroy {
     name: string;
     email: string;
     role: string;
+    roleId: number;
   }[] = [];
 
   // Add this property to fix the template error
@@ -215,12 +216,35 @@ export class UserComponent implements OnInit, OnDestroy {
         this.isLoading = false;
       });
   }
+  searchUser() {
+    this.loadRoles();
+
+    this.isLoading = true;
+    this.users = this.users.filter(user => {
+      const matchesName = this.searchName
+        ? user.name?.toLowerCase().includes(this.searchName.toLowerCase())
+        : true;
+      const matchesEmail = this.searchEmail
+        ? user.email?.toLowerCase().includes(this.searchEmail.toLowerCase())
+        : true;
+      // const matchesRole = this.searchrole && this.searchrole > 0 ? user.roleId === this.searchrole : true;
+      return matchesName && matchesEmail;
+    });
+    this.isLoading = false;
+  }
+  resetForm() {
+    this.searchName = '';
+    this.searchEmail = '';
+    this.searchrole = 0;
+    this.loadUsers();
+  }
   delete(value: any) {
     this.isLoading = true;
     const apiUrl = `${environment.apiUrl || ''}user/${value.id}`;
     const token = localStorage.getItem('ng-matero-token');
 
     fetch(apiUrl, {
+      method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
         'Content-Type': 'application/json',
@@ -229,7 +253,8 @@ export class UserComponent implements OnInit, OnDestroy {
       .then(res => res.json())
       .then(data => {
         this.users = data || [];
-        console.log(this.users);
+        this.snackBar.open('User deleted successfully!', 'Close', { duration: 2000 });
+        this.loadUsers();
         this.isLoading = false;
       })
       .catch(() => {

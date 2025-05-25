@@ -20,17 +20,21 @@
     <input matInput name="email" [(ngModel)]="searchEmail"  email />
   </mat-form-field>
 
-  <mat-form-field appearance="outline" class="w-100">
+  <!-- <mat-form-field appearance="outline" class="w-100">
     <mat-label>Role</mat-label>
     <mat-select name="role" [(ngModel)]="searchrole">
         <mat-option *ngFor="let role of rolesList" [value]="role.id">{{ role.name }}</mat-option>
     </mat-select>
-  </mat-form-field>
+  </mat-form-field> -->
 
-  <button mat-raised-button color="primary" type="submit" [disabled]="userForm.invalid">
+<button mat-raised-button color="primary" type="submit" [disabled]="userForm.invalid" (click)="searchUser()">
     Search
-  </button>
+</button>
+<button mat-raised-button color="primary" type="button" (click)="resetForm(userForm)">
+    Reset
+</button>
 </form>
+
 <mat-card>
     <!-- <mat-card-title>Permission List</mat-card-title> -->
     <mat-card-content>
