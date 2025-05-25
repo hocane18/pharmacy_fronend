@@ -22,7 +22,8 @@ import { MtxDialog } from '@ng-matero/extensions/dialog';
 
 import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
-
+import { environment } from '@env/environment';
+import { MatSnackBar } from '@angular/material/snack-bar';
 @Component({
   selector: 'app-permissions-role-switching',
   templateUrl: './user.component.html',
@@ -40,7 +41,6 @@ import { MatOptionModule } from '@angular/material/core';
     MatIconModule,
     MatDialogModule,
     MatFormFieldModule,
-
     MatInputModule,
     MatSelectModule,
     MatOptionModule,
@@ -50,22 +50,15 @@ import { MatOptionModule } from '@angular/material/core';
 export class UserComponent implements OnInit, OnDestroy {
   private readonly rolesSrv = inject(NgxRolesService);
   private readonly permissionsSrv = inject(NgxPermissionsService);
+  private readonly snackBar = inject(MatSnackBar);
   @ViewChild('userDialog') userDialog: any;
   currentRole = '';
-  rolesList: string[] = ['Admin', 'User', 'Manager'];
   currentPermissions: string[] = [];
   userModel: any = {}; // Add this line
-  permissionsOfRole: Record<string, string[]> = {
-    ADMIN: ['canAdd', 'canDelete', 'canEdit', 'canRead'],
-    MANAGER: ['canAdd', 'canEdit', 'canRead'],
-    GUEST: ['canRead'],
-  };
-
-  private readonly _destroy$ = new Subject<void>();
-  private readonly translate = inject(TranslateService);
-  //private readonly dataSrv = inject(TablesDataService);
-  private readonly dialog = inject(MatDialog);
-  roles: {
+  searchName = '';
+  searchEmail = '';
+  searchrole = 0;
+  rolesList: {
     id: string;
     name: string;
     description: string;
@@ -74,35 +67,19 @@ export class UserComponent implements OnInit, OnDestroy {
       name: string;
       description: string;
     }[];
-  }[] = [
-    {
-      id: '1',
-      name: 'ADMIN',
-      description: 'Administrator with full access',
-      permissions: [
-        { id: 'canAdd', name: 'Add', description: 'Can add items' },
-        { id: 'canDelete', name: 'Delete', description: 'Can delete items' },
-        { id: 'canEdit', name: 'Edit', description: 'Can edit items' },
-        { id: 'canRead', name: 'Read', description: 'Can read items' },
-      ],
-    },
-    {
-      id: '2',
-      name: 'MANAGER',
-      description: 'Manager with limited access',
-      permissions: [
-        { id: 'canAdd', name: 'Add', description: 'Can add items' },
-        { id: 'canEdit', name: 'Edit', description: 'Can edit items' },
-        { id: 'canRead', name: 'Read', description: 'Can read items' },
-      ],
-    },
-    {
-      id: '3',
-      name: 'GUEST',
-      description: 'Guest with read-only access',
-      permissions: [{ id: 'canRead', name: 'Read', description: 'Can read items' }],
-    },
-  ];
+  }[] = [];
+  selectedProfilePic: File | null = null;
+
+  private readonly _destroy$ = new Subject<void>();
+  private readonly translate = inject(TranslateService);
+  //private readonly dataSrv = inject(TablesDataService);
+  private readonly dialog = inject(MatDialog);
+  users: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  }[] = [];
 
   // Add this property to fix the template error
   isEditMode = false; // Add this property to fix the error
@@ -110,17 +87,35 @@ export class UserComponent implements OnInit, OnDestroy {
 
   columns: MtxGridColumn[] = [
     {
-      header: this.translate.stream('name'),
+      header: this.translate.stream('Profile Pic'),
+      field: 'avatar',
+      width: '80px',
+      type: 'image',
+      formatter: (row: any) => {
+        // If row.avatar is a URL, return an <img> tag, else empty string
+        if (row.avatar) {
+          return `<img src="${row.avatar}" alt="Profile Pic"  class="avatar" width="40" height="40" style="border-radius:80%;" />`;
+        }
+        return '';
+      },
+      // cellTemplate removed because it must be a TemplateRef, not a function
+    },
+    {
+      header: this.translate.stream('Name'),
       field: 'name',
       sortable: true,
       disabled: true,
-      //   minWidth: 100,
       width: '100px',
     },
     {
-      header: this.translate.stream('description'),
-      field: 'description',
-      //   minWidth: 100,
+      header: this.translate.stream('Email'),
+      sortable: true,
+      field: 'email',
+    },
+    {
+      header: this.translate.stream('Role'),
+      sortable: true,
+      field: 'role',
     },
     {
       header: this.translate.stream('operation'),
@@ -173,26 +168,22 @@ export class UserComponent implements OnInit, OnDestroy {
     this.rolesSrv.roles$.pipe(takeUntil(this._destroy$)).subscribe(roles => {
       console.log(roles);
     });
+    this.loadRoles();
+    this.loadUsers(); // Load users when the component initializes
     this.permissionsSrv.permissions$.pipe(takeUntil(this._destroy$)).subscribe(permissions => {
       console.log(permissions);
     });
   }
   onProfileSelect(event: any): void {
-    // Handle the profile selection here
     const file: File = event.target?.files?.[0];
     if (file) {
+      this.selectedProfilePic = file;
+      console.log(this.selectedProfilePic);
+      // Optional: preview or process file
       const reader = new FileReader();
-      reader.onload = () => {
-        const base64String = (reader.result as string).split(',')[1];
-        // You can now use base64String as needed
-        console.log('Base64:', base64String);
-        // For example, assign to a property:
-        // this.userModel.profileImage = base64String;
-      };
+
       reader.readAsDataURL(file);
     }
-
-    console.log('Profile selected:', event);
   }
 
   // Add this method to handle editing a role
@@ -202,8 +193,53 @@ export class UserComponent implements OnInit, OnDestroy {
     // Open the dialog here if needed, e.g.:
     // this.dialog.open(this.roleDialog);
   }
+  onSubmit() {}
+  loadRoles() {
+    this.isLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}RoleAndPermission/role`;
+    const token = localStorage.getItem('ng-matero-token');
+
+    fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.rolesList = data || [];
+        console.log(this.rolesList);
+        this.isLoading = false;
+      })
+      .catch(() => {
+        this.isLoading = false;
+      });
+  }
+  delete(value: any) {
+    this.isLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}user/${value.id}`;
+    const token = localStorage.getItem('ng-matero-token');
+
+    fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.users = data || [];
+        console.log(this.users);
+        this.isLoading = false;
+      })
+      .catch(() => {
+        this.isLoading = false;
+        this.snackBar.open('unable to get users!', 'Close', { duration: 2000 });
+      });
+  }
+
   openAddRoleDialog(): void {
-    this.isEditMode = false;
+    //
     this.roleForm = {
       name: '',
       description: '',
@@ -221,16 +257,114 @@ export class UserComponent implements OnInit, OnDestroy {
       }
     });
   }
+  saveUserData() {
+    this.isLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}user`;
+    const token = localStorage.getItem('ng-matero-token');
 
+    const formData = new FormData();
+    formData.append('name', this.userModel.name);
+    formData.append('email', this.userModel.email);
+    formData.append('password', this.userModel.password);
+    formData.append('roleId', this.userModel.roleId);
+    formData.append('status', 'Active');
+    if (this.selectedProfilePic) {
+      formData.append('profilePic', this.selectedProfilePic);
+    } else {
+      formData.append('profilePic', '');
+    }
+    fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+      },
+      body: formData,
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to add user');
+        return res.json();
+      })
+      .then(data => {
+        this.snackBar.open('User added successfully!', 'Close', { duration: 2000 });
+        this.loadUsers();
+        this.isLoading = false;
+      })
+      .catch(() => {
+        this.snackBar.open('Failed to add user!', 'Close', { duration: 2000 });
+        this.isLoading = false;
+      });
+  }
+  loadUsers() {
+    this.isLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}user`;
+    const token = localStorage.getItem('ng-matero-token');
+
+    fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.users = data || [];
+        console.log(this.users);
+        this.isLoading = false;
+      })
+      .catch(() => {
+        this.isLoading = false;
+        this.snackBar.open('unable to get users!', 'Close', { duration: 2000 });
+      });
+  }
+  editUserData() {
+    this.isLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}user/${this.userModel.id}`;
+    const token = localStorage.getItem('ng-matero-token');
+
+    const formData = new FormData();
+    formData.append('name', this.userModel.name);
+    formData.append('email', this.userModel.email);
+
+    formData.append('roleId', this.userModel.roleId);
+    formData.append('status', 'Active');
+    if (this.selectedProfilePic) {
+      formData.append('profilePic', this.selectedProfilePic);
+    } else {
+      formData.append('profilePic', '');
+    }
+    fetch(apiUrl, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+      },
+      body: formData,
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to add user');
+        return res.json();
+      })
+      .then(data => {
+        this.snackBar.open('User added successfully!', 'Close', { duration: 2000 });
+        this.loadUsers();
+        this.isLoading = false;
+      })
+      .catch(() => {
+        this.snackBar.open('Failed to add user!', 'Close', { duration: 2000 });
+        this.isLoading = false;
+      });
+  }
   edit(value: any) {
+    // Bind value with userModel except password (set password to null)
+    this.userModel = { ...value, password: null };
+    console.log(value);
+
+    this.isEditMode = true;
     this.openAddRoleDialog();
   }
-  onSubmit() {
-    // Handle form submission
-    console.log(this.userModel);
-  }
-  delete(value: any) {
-    // this.dialog.alert(`You have deleted ${value.position}!`);
+  addnewuser() {
+    this.isEditMode = false;
+    this.userModel = {};
+    this.openAddRoleDialog();
   }
 
   changeSelect(e: any) {
@@ -241,14 +375,20 @@ export class UserComponent implements OnInit, OnDestroy {
     console.log(e);
   }
   saveUser(): void {
-    // Implement your save logic here, e.g., call a service or update the roles array
-    // Example:
-    // if (this.isEditMode) {
-    //   // Update existing role
-    // } else {
-    //   // Add new role
-    // }
-    // Close dialog if using MatDialogRef
+    // Handle form submission
+    if (this.isEditMode) {
+      this.editUserData();
+      this.selectedProfilePic = null;
+      this.loadUsers();
+      this.userModel = {};
+      this.dialog.closeAll(); // Close the dialog after submission
+    } else {
+      this.saveUserData();
+      this.selectedProfilePic = null;
+      this.loadUsers();
+      this.userModel = {}; // Reset the form after submission
+      this.dialog.closeAll();
+    }
   }
   ngOnDestroy() {
     this._destroy$.next();
@@ -256,8 +396,8 @@ export class UserComponent implements OnInit, OnDestroy {
   }
 
   onPermissionChange() {
-    this.currentPermissions = this.permissionsOfRole[this.currentRole];
-    this.rolesSrv.flushRolesAndPermissions();
-    this.rolesSrv.addRoleWithPermissions(this.currentRole, this.currentPermissions);
+    // //this.currentPermissions = this.permissionsOfRole[this.currentRole];
+    // this.rolesSrv.flushRolesAndPermissions();
+    // this.rolesSrv.addRoleWithPermissions(this.currentRole, this.currentPermissions);
   }
 }
