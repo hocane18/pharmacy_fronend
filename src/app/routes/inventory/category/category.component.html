@@ -57,23 +57,7 @@
                 <textarea matInput [(ngModel)]="roleForm.description" name="description" rows="3"></textarea>
             </mat-form-field>
 
-            <div class="permissions-section">
-                <h3>Permissions</h3>
-                <div class="permission-list">
-                    @for (permission of availablePermissions; track permission.id) {
-                        <div class="permission-item">
-                            <div class="permission-info">
-                                <h4>{{ permission.name }}</h4>
-                                <p>{{ permission.description }}</p>
-                            </div>
-                            <mat-slide-toggle
-                                [checked]="isPermissionSelected(permission.id)"
-                                (change)="togglePermission(permission)"
-                            />
-                        </div>
-                    }
-                </div>
-            </div>
+          
         </form>
     </mat-dialog-content>
     <mat-dialog-actions align="end">

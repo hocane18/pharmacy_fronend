@@ -21,7 +21,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { MtxDialog } from '@ng-matero/extensions/dialog';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { environment } from '@env/environment';
-
+import { MatSnackBar } from '@angular/material/snack-bar';
 @Component({
   selector: 'app-permissions-role-switching',
   templateUrl: './category.component.html',
@@ -52,66 +52,26 @@ export class CategoryComponent implements OnInit, OnDestroy {
   private readonly permissionsSrv = inject(NgxPermissionsService);
   private readonly dialog = inject(MatDialog);
   private readonly translate = inject(TranslateService);
+  private readonly snackBar = inject(MatSnackBar);
   categories: {
     id: string;
     name: string;
     description: string;
     prodcuts: any[];
   }[] = [];
-  currentRole = '';
+
   currentPermissions: string[] = [];
   isEditMode = false;
   roleForm: any = {
     name: '',
     description: '',
-    permissions: [],
   };
-
-  availablePermissions = [
-    { id: 'canAdd', name: 'Add', description: 'Can add items' },
-    { id: 'canDelete', name: 'Delete', description: 'Can delete items' },
-    { id: 'canEdit', name: 'Edit', description: 'Can edit items' },
-    { id: 'canRead', name: 'Read', description: 'Can read items' },
-  ];
 
   roles: {
     id: string;
     name: string;
     description: string;
-    permissions: {
-      id: string;
-      name: string;
-      description: string;
-    }[];
-  }[] = [
-    {
-      id: '1',
-      name: 'ADMIN',
-      description: 'Administrator with full access',
-      permissions: [
-        { id: 'canAdd', name: 'Add', description: 'Can add items' },
-        { id: 'canDelete', name: 'Delete', description: 'Can delete items' },
-        { id: 'canEdit', name: 'Edit', description: 'Can edit items' },
-        { id: 'canRead', name: 'Read', description: 'Can read items' },
-      ],
-    },
-    {
-      id: '2',
-      name: 'MANAGER',
-      description: 'Manager with limited access',
-      permissions: [
-        { id: 'canAdd', name: 'Add', description: 'Can add items' },
-        { id: 'canEdit', name: 'Edit', description: 'Can edit items' },
-        { id: 'canRead', name: 'Read', description: 'Can read items' },
-      ],
-    },
-    {
-      id: '3',
-      name: 'GUEST',
-      description: 'Guest with read-only access',
-      permissions: [{ id: 'canRead', name: 'Read', description: 'Can read items' }],
-    },
-  ];
+  }[] = [];
 
   columns: MtxGridColumn[] = [
     {
@@ -139,18 +99,18 @@ export class CategoryComponent implements OnInit, OnDestroy {
           tooltip: this.translate.stream('edit'),
           click: record => this.edit(record),
         },
-        {
-          type: 'icon',
-          color: 'warn',
-          icon: 'delete',
-          tooltip: this.translate.stream('delete'),
-          pop: {
-            title: this.translate.stream('confirm_delete'),
-            closeText: this.translate.stream('close'),
-            okText: this.translate.stream('ok'),
-          },
-          click: record => this.delete(record),
-        },
+        // {
+        //   type: 'icon',
+        //   color: 'warn',
+        //   icon: 'delete',
+        //   tooltip: this.translate.stream('delete'),
+        //   pop: {
+        //     title: this.translate.stream('confirm_delete'),
+        //     closeText: this.translate.stream('close'),
+        //     okText: this.translate.stream('ok'),
+        //   },
+        //   click: record => this.delete(record),
+        // },
       ],
     },
   ];
@@ -170,8 +130,6 @@ export class CategoryComponent implements OnInit, OnDestroy {
   columnResizable = false;
 
   ngOnInit() {
-    this.currentRole = Object.keys(this.rolesSrv.getRoles())[0];
-    this.currentPermissions = Object.keys(this.permissionsSrv.getPermissions());
     this.loadCategories();
   }
 
@@ -180,7 +138,6 @@ export class CategoryComponent implements OnInit, OnDestroy {
     this.roleForm = {
       name: '',
       description: '',
-      permissions: [],
     };
 
     const dialogRef = this.dialog.open(this.roleDialog, {
@@ -199,7 +156,6 @@ export class CategoryComponent implements OnInit, OnDestroy {
     this.isEditMode = true;
     this.roleForm = {
       ...role,
-      permissions: [...role.permissions],
     };
 
     const dialogRef = this.dialog.open(this.roleDialog, {
@@ -223,30 +179,18 @@ export class CategoryComponent implements OnInit, OnDestroy {
 
   saveRole(roleData: any): void {
     if (this.isEditMode) {
-      const index = this.roles.findIndex(r => r.id === roleData.id);
-      if (index > -1) {
-        this.roles[index] = roleData;
-      }
+      console.log('Updating role:', roleData);
+      this.editCategory(roleData);
+      this.loadCategories();
     } else {
+      this.saveCategory(roleData);
       const newRole = {
         ...roleData,
         id: (this.roles.length + 1).toString(),
       };
-      this.roles.push(newRole);
+      this.loadCategories();
+      //  this.roles.push(newRole);
     }
-  }
-
-  togglePermission(permission: any): void {
-    const index = this.roleForm.permissions.findIndex((p: any) => p.id === permission.id);
-    if (index > -1) {
-      this.roleForm.permissions.splice(index, 1);
-    } else {
-      this.roleForm.permissions.push(permission);
-    }
-  }
-
-  isPermissionSelected(permissionId: string): boolean {
-    return this.roleForm.permissions.some((p: any) => p.id === permissionId);
   }
 
   changeSelect(e: any) {
@@ -287,21 +231,64 @@ export class CategoryComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     const apiUrl = `${environment.apiUrl || ''}ProductAndCategory/category`;
     const token = localStorage.getItem('ng-matero-token');
-
+    // Prepare form data for adding a category
+    if (!category.name || !category.description) {
+      this.isLoading = false;
+      return;
+    }
+    const formData = {
+      name: category.name,
+      description: category.description,
+    };
     fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(category),
+      body: JSON.stringify(formData),
     })
       .then(res => res.json())
       .then(data => {
         this.isLoading = false;
+        this.snackBar.open('Catefory added successfully!', 'Close', { duration: 2000 });
         this.loadCategories();
       })
       .catch(() => {
+        this.snackBar.open('Failed to add category!', 'Close', { duration: 2000 });
+
+        this.isLoading = false;
+      });
+  }
+  editCategory(category: any) {
+    this.isLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}ProductAndCategory/category/${category.id}`;
+    const token = localStorage.getItem('ng-matero-token');
+    // Prepare form data for adding a category
+    if (!category.name || !category.description) {
+      this.isLoading = false;
+      return;
+    }
+    const formData = {
+      name: category.name,
+      description: category.description,
+    };
+    fetch(apiUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData),
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.isLoading = false;
+        this.snackBar.open('Category updated successfully!', 'Close', { duration: 2000 });
+        this.loadCategories();
+      })
+      .catch(() => {
+        this.snackBar.open('Failed to update category!', 'Close', { duration: 2000 });
         this.isLoading = false;
       });
   }

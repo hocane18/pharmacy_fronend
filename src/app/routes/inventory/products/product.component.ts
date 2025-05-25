@@ -22,6 +22,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { environment } from '@env/environment';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-product',
@@ -55,6 +57,7 @@ export class ProductComponent implements OnInit, OnDestroy {
   private readonly dialog = inject(MatDialog);
   private readonly translate = inject(TranslateService);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly snackBar = inject(MatSnackBar);
 
   isEditMode = false;
   selectedFile: File | null = null;
@@ -73,11 +76,7 @@ export class ProductComponent implements OnInit, OnDestroy {
     image: null,
   };
 
-  categories = [
-    { id: '1', name: 'Medicines' },
-    { id: '2', name: 'Supplements' },
-    { id: '3', name: 'Medical Devices' },
-  ];
+  categories: any[] = [];
 
   units = [
     { value: 'pcs', label: 'Pieces' },
@@ -87,32 +86,17 @@ export class ProductComponent implements OnInit, OnDestroy {
   ];
 
   products: any[] = [
-    {
-      id: '1',
-      name: 'Paracetamol 500mg',
-      categoryId: '1',
-      barcode: '123456789',
-      brand: 'ABC Pharma',
-      costPrice: 5.00,
-      salePrice: 7.50,
-      quantity: 100,
-      unit: 'pcs',
-      expiryDate: new Date('2024-12-31'),
-      alertQuantity: 20,
-      image: null,
-      createdAt: new Date('2024-01-01'),
-    },
     // Add more sample products as needed
   ];
 
   columns: MtxGridColumn[] = [
     {
       header: 'Image',
-      field: 'image',
+      field: 'imageUrl',
       width: '100px',
       formatter: (row: any) => {
-        if (row.image) {
-          return `<img src="${row.image}" alt="Product" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">`;
+        if (row.imageUrl) {
+          return `<img src="${row.imageUrl}" alt="Product" class="avatar" width="40" height="40" style=" object-fit: cover; border-radius: 4px;">`;
         }
         return '';
       },
@@ -179,7 +163,8 @@ export class ProductComponent implements OnInit, OnDestroy {
       header: 'Expiry Date',
       field: 'expiryDate',
       width: '120px',
-      formatter: (row: any) => row.expiryDate ? new Date(row.expiryDate).toLocaleDateString() : '',
+      formatter: (row: any) =>
+        row.expiryDate ? new Date(row.expiryDate).toLocaleDateString() : '',
     },
     {
       header: 'Alert Qty',
@@ -190,7 +175,7 @@ export class ProductComponent implements OnInit, OnDestroy {
       header: 'Created At',
       field: 'createdAt',
       width: '120px',
-      formatter: (row: any) => row.createdAt ? new Date(row.createdAt).toLocaleDateString() : '',
+      formatter: (row: any) => (row.createdAt ? new Date(row.createdAt).toLocaleDateString() : ''),
     },
     {
       header: 'Operation',
@@ -236,7 +221,10 @@ export class ProductComponent implements OnInit, OnDestroy {
   expandable = false;
   columnResizable = true;
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.loadCategories();
+    this.loadProducts();
+  }
 
   onFileSelected(event: any): void {
     const file = event.target.files[0];
@@ -246,7 +234,27 @@ export class ProductComponent implements OnInit, OnDestroy {
       this.productForm.image = this.previewUrl;
     }
   }
+  loadCategories() {
+    this.isLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}ProductAndCategory/categories`;
+    const token = localStorage.getItem('ng-matero-token');
 
+    fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.categories = data || [];
+        console.log(this.categories);
+        this.isLoading = false;
+      })
+      .catch(() => {
+        this.isLoading = false;
+      });
+  }
   openAddProductDialog(): void {
     this.isEditMode = false;
     this.selectedFile = null;
@@ -307,7 +315,7 @@ export class ProductComponent implements OnInit, OnDestroy {
       if (index > -1) {
         this.products[index] = {
           ...productData,
-          image: this.previewUrl
+          image: this.previewUrl,
         };
       }
     } else {
@@ -315,8 +323,10 @@ export class ProductComponent implements OnInit, OnDestroy {
         ...productData,
         id: (this.products.length + 1).toString(),
         createdAt: new Date(),
-        image: this.previewUrl
+        image: this.previewUrl,
       };
+      this.saveProducts(newProduct);
+      this.loadProducts();
       this.products.push(newProduct);
     }
   }
@@ -332,5 +342,66 @@ export class ProductComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this._destroy$.next();
     this._destroy$.complete();
+  }
+  loadProducts() {
+    this.isLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}ProductAndCategory/products`;
+    const token = localStorage.getItem('ng-matero-token');
+    fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(response => response.json())
+      .then(data => {
+        this.products = data;
+        this.isLoading = false;
+      })
+      .catch(error => {
+        console.error('Error loading categories:', error);
+        this.isLoading = false;
+      });
+  }
+  saveProducts(products: any): void {
+    console.log('Saving products:', products);
+    const formData = new FormData();
+    formData.append('Name', products.name);
+    formData.append('CategoryId', products.categoryId.toString());
+    formData.append('Barcode', products.barcode);
+    formData.append('Brand', products.brand);
+    formData.append('CostPrice', products.costPrice.toString());
+    formData.append('SalePrice', products.salePrice.toString());
+    formData.append('Unit', products.unit);
+    formData.append(
+      'ExpiryDate',
+      products.expiryDate ? new Date(products.expiryDate).toISOString() : ''
+    );
+    formData.append('AlertQuantity', products.alertQuantity.toString());
+    if (this.selectedFile) {
+      formData.append('Image', this.selectedFile);
+    }
+    this.isLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}ProductAndCategory/product`;
+    const token = localStorage.getItem('ng-matero-token');
+    fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+      },
+      body: formData,
+    })
+      .then(response => response.json())
+      .then(data => {
+        this.snackBar.open('Products added successfully!', 'Close', { duration: 2000 });
+        this.isLoading = false;
+        console.log('Products saved successfully:', data);
+      })
+      .catch(error => {
+        this.isLoading = false;
+        this.snackBar.open('Error saving products. Please try again.', 'Close', { duration: 3000 });
+        console.error('Error saving products:', error);
+      });
   }
 }
