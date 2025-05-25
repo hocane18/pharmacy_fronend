@@ -191,18 +191,18 @@ export class ProductComponent implements OnInit, OnDestroy {
           tooltip: 'Edit',
           click: record => this.edit(record),
         },
-        {
-          type: 'icon',
-          color: 'warn',
-          icon: 'delete',
-          tooltip: 'Delete',
-          pop: {
-            title: 'Confirm Delete',
-            closeText: 'Cancel',
-            okText: 'Delete',
-          },
-          click: record => this.delete(record),
-        },
+        // {
+        //   type: 'icon',
+        //   color: 'warn',
+        //   icon: 'delete',
+        //   tooltip: 'Delete',
+        //   pop: {
+        //     title: 'Confirm Delete',
+        //     closeText: 'Cancel',
+        //     okText: 'Delete',
+        //   },
+        //   click: record => this.delete(record),
+        // },
       ],
     },
   ];

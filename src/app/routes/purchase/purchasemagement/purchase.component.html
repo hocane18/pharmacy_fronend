@@ -33,7 +33,7 @@
     <mtx-grid
       [data]="suppliers"
       [columns]="supplierColumns"
-      [loading]="false"
+      [loading]="supplierLoading"
       [showToolbar]="true"
       [pageSize]="5"
       [pageSizeOptions]="[5, 10, 25, 50]">
@@ -94,7 +94,7 @@
         <mat-label>Product</mat-label>
         <mat-select [(ngModel)]="purchaseItemForm.productId" (selectionChange)="onProductChange(purchaseItemForm)">
           <mat-option *ngFor="let product of products" [value]="product.id">
-            {{ product.name }} - ${{ product.price.toFixed(2) }}
+            {{ product.name }} - ${{ product.salePrice.toFixed(2) }}
           </mat-option>
         </mat-select>
       </mat-form-field>
@@ -140,18 +140,18 @@
         </mat-select>
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="full-width">
+      <!-- <mat-form-field appearance="outline" class="full-width">
         <mat-label>User</mat-label>
         <mat-select [(ngModel)]="purchaseForm.userId">
           <mat-option *ngFor="let user of users" [value]="user.id">
             {{ user.name }}
           </mat-option>
         </mat-select>
-      </mat-form-field>
+      </mat-form-field> -->
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Invoice No</mat-label>
-        <input matInput [(ngModel)]="purchaseForm.invoiceNo">
+        <input matInput [(ngModel)]="purchaseForm.invoiceNo" disabled>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
@@ -173,7 +173,7 @@
         <mtx-grid
           [data]="purchaseForm.items"
           [columns]="itemColumns"
-          [loading]="false"
+          [loading]="itemtableload"
           [showToolbar]="false"
           [pageSize]="5"
           [pageSizeOptions]="[5, 10, 25, 50]">
@@ -261,7 +261,7 @@
       <div class="purchase-items-section">
         <h3>Purchase Items</h3>
         <mtx-grid
-          [data]="dialogData.purchase.items"
+          [data]="purchaseForm.items"
           [columns]="itemColumns"
           [loading]="false"
           [showToolbar]="false"

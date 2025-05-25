@@ -20,7 +20,8 @@ import { MatDividerModule } from '@angular/material/divider';
 import { PurchaseItem } from './purchase-item.interface';
 import { Supplier } from './supplier.interface';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
-
+import { environment } from '@env/environment';
+import { MatSnackBar } from '@angular/material/snack-bar';
 @Component({
   selector: 'app-purchase',
   templateUrl: './purchase.component.html',
@@ -56,6 +57,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
   private readonly _destroy$ = new Subject<void>();
   private readonly dialog = inject(MatDialog);
   private readonly translate = inject(TranslateService);
+  private readonly snackBar = inject(MatSnackBar);
 
   dialogData: any = {
     purchase: null,
@@ -63,6 +65,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
 
   isEditMode = false;
   isSupplierEditMode = false;
+  itemtableload = false;
   supplierForm: Supplier = {
     name: '',
     phone: '',
@@ -81,49 +84,32 @@ export class PurchaseComponent implements OnInit, OnDestroy {
 
   purchaseItemForm: PurchaseItem = {
     productId: 0,
+    productName: '',
     quantity: 0,
     price: 0,
     total: 0,
   };
 
-  products = [
-    { id: 1, name: 'Product A', price: 10.0 },
-    { id: 2, name: 'Product B', price: 15.0 },
-    { id: 3, name: 'Product C', price: 20.0 },
-  ];
+  products: {
+    id: number;
+    name: string;
+    categoryId: number;
+    category: string;
+    barcode: string;
+    brand: string;
+    costPrice: number;
+    salePrice: number;
+    quantity: number;
+    unit: string;
+    expiryDate: string;
+    alertQuantity: number;
+    createdAt: string;
+    imageUrl: string;
+  }[] = [];
 
-  suppliers: Supplier[] = [
-    {
-      id: 1,
-      name: 'Supplier A',
-      phone: '123-456-7890',
-      address: '123 Main St',
-      email: 'supplierA@example.com',
-      createdAt: new Date('2024-01-01'),
-    },
-    {
-      id: 2,
-      name: 'Supplier B',
-      phone: '234-567-8901',
-      address: '456 Oak St',
-      email: 'supplierB@example.com',
-      createdAt: new Date('2024-01-02'),
-    },
-    {
-      id: 3,
-      name: 'Supplier C',
-      phone: '345-678-9012',
-      address: '789 Pine St',
-      email: 'supplierC@example.com',
-      createdAt: new Date('2024-01-03'),
-    },
-  ];
+  suppliers: Supplier[] = [];
 
-  users = [
-    { id: '1', name: 'User A' },
-    { id: '2', name: 'User B' },
-    { id: '3', name: 'User C' },
-  ];
+  users = [];
 
   purchases: any[] = [
     {
@@ -327,7 +313,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       ],
     },
   ];
-
+  supplierLoading = false;
   isLoading = false;
   multiSelectable = false;
   rowSelectable = false;
@@ -348,7 +334,9 @@ export class PurchaseComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.filteredPurchases = [...this.purchases];
-
+    this.loadSupplier();
+    this.loadPurchase();
+    this.loadProducts();
     // Setup search with debounce
     this.searchSubject.pipe(debounceTime(300), distinctUntilChanged()).subscribe(searchText => {
       this.filterPurchases(searchText);
@@ -423,6 +411,27 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       this.purchases.splice(index, 1);
     }
   }
+  loadProducts() {
+    this.isLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}ProductAndCategory/products`;
+    const token = localStorage.getItem('ng-matero-token');
+    fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(response => response.json())
+      .then(data => {
+        this.products = data;
+        this.isLoading = false;
+      })
+      .catch(error => {
+        console.error('Error loading categories:', error);
+        this.isLoading = false;
+      });
+  }
 
   savePurchase(purchaseData: any): void {
     if (this.isEditMode) {
@@ -435,6 +444,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
         ...purchaseData,
         id: (this.purchases.length + 1).toString(),
       };
+      this.savePurchase(newPurchase);
       this.purchases.push(newPurchase);
     }
   }
@@ -458,8 +468,9 @@ export class PurchaseComponent implements OnInit, OnDestroy {
   }
 
   getUserName(userId: string): string {
-    const user = this.users.find(u => u.id === userId);
-    return user ? user.name : userId;
+    // const user = this.users.find(u => u.id === userId);
+    // return user ? user.name : userId;
+    return '';
   }
 
   calculateItemTotal(item: PurchaseItem): number {
@@ -476,6 +487,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
   openAddItemDialog(): void {
     this.purchaseItemForm = {
       productId: 0,
+      productName: '',
       quantity: 0,
       price: 0,
       total: 0,
@@ -488,9 +500,17 @@ export class PurchaseComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+        this.itemtableload = true;
+        console.log('itemurchase' + result);
+        console.log(result);
+
         result.total = this.calculateItemTotal(result);
+        const product = this.products.find(p => p.id === result.productId);
+        result.productName = product ? product.name : '';
         this.purchaseForm.items.push(result);
+        console.log(this.purchaseForm.items);
         this.updatePurchaseTotal();
+        this.itemtableload = false;
       }
     });
   }
@@ -524,7 +544,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
   onProductChange(item: PurchaseItem): void {
     const product = this.products.find(p => p.id === item.productId);
     if (product) {
-      item.price = product.price;
+      item.price = product.salePrice;
       item.total = this.calculateItemTotal(item);
     }
   }
@@ -588,12 +608,16 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       if (index > -1) {
         this.suppliers[index] = supplierData;
       }
+      this.editSuppliers(this.suppliers[index]);
+      this.loadSupplier();
     } else {
       const newSupplier = {
         ...supplierData,
         id: this.suppliers.length + 1,
         createdAt: new Date(),
       };
+      this.addSupplier(newSupplier);
+      this.loadSupplier();
       this.suppliers.push(newSupplier);
     }
   }
@@ -626,6 +650,159 @@ export class PurchaseComponent implements OnInit, OnDestroy {
     this.suppliers.push(newSupplier);
     this.purchaseForm.supplierId = newSupplier.id;
     this.dialog.closeAll();
+  }
+  loadPurchase() {
+    this.isLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}Purchase`;
+    const token = localStorage.getItem('ng-matero-token');
+
+    fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.filteredPurchases = data || {};
+        console.log(this.filteredPurchases);
+        this.isLoading = false;
+      })
+      .catch(() => {
+        this.isLoading = false;
+      });
+  }
+  loadSupplier() {
+    this.supplierLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}Supplier`;
+    const token = localStorage.getItem('ng-matero-token');
+
+    fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.suppliers = data || [];
+        console.log(this.suppliers);
+        this.supplierLoading = false;
+      })
+      .catch(() => {
+        this.supplierLoading = false;
+      });
+  }
+
+  addSupplier(supplier: any) {
+    this.supplierLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}Supplier`;
+    const token = localStorage.getItem('ng-matero-token');
+
+    // Prepare data to match SupplierDto structure
+    const fordata = {
+      Name: supplier.name,
+      Phone: supplier.phone,
+      Address: supplier.address,
+      Email: supplier.email,
+    };
+    fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+      body: fordata ? JSON.stringify(fordata) : null,
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.suppliers.push(data);
+        this.snackBar.open('Supplier added successfully!', 'Close', { duration: 2000 });
+
+        this.supplierLoading = false;
+      })
+      .catch(() => {
+        this.snackBar.open('Failed to add supplier. Please try again.', 'Close', {
+          duration: 2000,
+        });
+        this.supplierLoading = false;
+      });
+  }
+  editSuppliers(supplier: any) {
+    this.supplierLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}Supplier/${supplier.id}`;
+    const token = localStorage.getItem('ng-matero-token');
+
+    // Prepare data to match SupplierDto structure
+    const fordata = {
+      Name: supplier.name,
+      Phone: supplier.phone,
+      Address: supplier.address,
+      Email: supplier.email,
+    };
+    fetch(apiUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+      body: fordata ? JSON.stringify(fordata) : null,
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.suppliers.push(data);
+        this.snackBar.open('Supplier updated successfully!', 'Close', { duration: 2000 });
+
+        this.supplierLoading = false;
+      })
+      .catch(() => {
+        this.snackBar.open('Failed to update supplier. Please try again.', 'Close', {
+          duration: 2000,
+        });
+        this.supplierLoading = false;
+      });
+  }
+  addPurchase(purchase: any) {
+    this.isLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}Purchase`;
+    const token = localStorage.getItem('ng-matero-token');
+
+    // Prepare data to match PurchaseDto structure
+    const fordata = {
+      SupplierId: purchase.supplierId,
+      UserId: purchase.userId,
+      TotalAmount: purchase.totalAmount,
+      InvoiceNo: purchase.invoiceNo,
+      PurchaseDate: purchase.purchaseDate,
+      Items: purchase.items.map((item: PurchaseItem) => ({
+        ProductId: item.productId,
+        Quantity: item.quantity,
+        Price: item.price,
+        Total: item.total,
+      })),
+    };
+
+    fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+      body: fordata ? JSON.stringify(fordata) : null,
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.purchases.push(data);
+        this.snackBar.open('Purchase added successfully!', 'Close', { duration: 2000 });
+
+        this.isLoading = false;
+      })
+      .catch(() => {
+        this.snackBar.open('Failed to add purchase. Please try again.', 'Close', {
+          duration: 2000,
+        });
+        this.isLoading = false;
+      });
   }
 
   ngOnDestroy() {
