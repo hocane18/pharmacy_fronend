@@ -1,138 +1,146 @@
 <page-header class="bg-green-50" />
 
-<div class="product-actions" style="margin: 16px 0;">
-    <button mat-raised-button color="primary" (click)="openAddProductDialog()">
-        Add quotations
-    </button>
+<div class="quotation-actions">
+  <div class="actions-container">
+    <div class="search-container">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Search Quotations</mat-label>
+        <input matInput
+               [(ngModel)]="searchText"
+               (ngModelChange)="onSearchChange($event)"
+               placeholder="Search by ID, customer, user, quotation, amount, or date">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+    </div>
+    <div class="button-group">
+      <button mat-raised-button color="primary" (click)="openAddCustomerDialog()">
+        <mat-icon>person_add</mat-icon>
+        Add Customer
+      </button>
+      <button mat-raised-button color="primary" (click)="openAddQuotationDialog()">
+        <mat-icon>add</mat-icon>
+        Add Quotation
+      </button>
+    </div>
+  </div>
 </div>
 
-<mat-card>
-    <mat-card-content>
-        <mtx-grid
-            [data]="products"
-            [columns]="columns"
-            [loading]="isLoading"
-            [columnResizable]="columnResizable"
-            [multiSelectable]="multiSelectable"
-            [rowSelectable]="rowSelectable"
-            [hideRowSelectionCheckbox]="hideRowSelectionCheckbox"
-            [rowHover]="rowHover"
-            [rowStriped]="rowStriped"
-            [showToolbar]="showToolbar"
-            [toolbarTitle]="'quotations List'"
-            [columnHideable]="columnHideable"
-            [columnSortable]="columnSortable"
-            [columnPinnable]="columnPinnable"
-            [expandable]="expandable"
-            [expansionTemplate]="expansionTpl"
-            [pageOnFront]="showPaginator"
-            [showPaginator]="showPaginator"
-            [pageSizeOptions]="[5, 10, 50, 100]"
-            [pageIndex]="0"
-            [pageSize]="5"
-            (sortChange)="changeSort($event)"
-            (selectionChange)="changeSelect($event)"
-        />
-        <ng-template #expansionTpl let-row>
-            <div class="product-details">
-                <img [src]="row.imageUrl" alt="Product Image" class="product-image" *ngIf="row.imageUrl">
-                <div class="product-info">
-                    <p><strong>Barcode:</strong> {{ row.barcode }}</p>
-                    <p><strong>Brand:</strong> {{ row.brand }}</p>
-                    <p><strong>Cost Price:</strong> ${{ row.costPrice.toFixed(2) }}</p>
-                    <p><strong>Sale Price:</strong> ${{ row.salePrice.toFixed(2) }}</p>
-                    <p><strong>Alert Quantity:</strong> {{ row.alertQuantity }}</p>
-                </div>
-            </div>
-        </ng-template>
-    </mat-card-content>
+<mat-card class="customer-card">
+  <mat-card-header>
+    <mat-card-title>Customers</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <mtx-grid
+      [data]="customers"
+      [columns]="customerColumns"
+      [loading]="customerLoading"
+      [showToolbar]="true"
+      [pageSize]="5"
+      [pageSizeOptions]="[5, 10, 25, 50]">
+    </mtx-grid>
+  </mat-card-content>
 </mat-card>
 
-<!-- Add/Edit Product Dialog -->
-<ng-template #productDialog>
-    <h2 mat-dialog-title>{{ isEditMode ? 'Edit Product' : 'Add Product' }}</h2>
-    <mat-dialog-content>
-        <form class="product-form">
-            <div class="form-row">
-                <mat-form-field appearance="outline">
-                    <mat-label>Name</mat-label>
-                    <input matInput [(ngModel)]="productForm.name" name="name" required>
-                </mat-form-field>
+<mat-card class="quotation-card">
+  <mat-card-header>
+    <mat-card-title>Quotations</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <mtx-grid
+      [data]="filteredQuotations"
+      [columns]="columns"
+      [loading]="isLoading"
+      [showToolbar]="true"
+      [pageSize]="5"
+      [pageSizeOptions]="[5, 10, 25, 50]">
+    </mtx-grid>
+  </mat-card-content>
+</mat-card>
 
-                <mat-form-field appearance="outline">
-                    <mat-label>Category</mat-label>
-                    <mat-select [(ngModel)]="productForm.categoryId" name="categoryId" required>
-                        @for (category of categories; track category.id) {
-                            <mat-option [value]="category.id">{{ category.name }}</mat-option>
-                        }
-                    </mat-select>
-                </mat-form-field>
-            </div>
+<!-- Quotation Dialog -->
+<ng-template #quotationDialog>
+  <h2 mat-dialog-title>{{ isEditMode ? 'Edit' : 'Add' }} Quotation</h2>
+  <mat-dialog-content>
+    <div class="quotation-form">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Customer</mat-label>
+        <mat-select [(ngModel)]="quotationForm.customerId">
+          <mat-option *ngFor="let customer of customers" [value]="customer.id">
+            {{ customer.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
 
-            <div class="form-row">
-                <mat-form-field appearance="outline">
-                    <mat-label>Barcode</mat-label>
-                    <input matInput [(ngModel)]="productForm.barcode" name="barcode" required>
-                </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Quotation No</mat-label>
+        <input matInput [(ngModel)]="quotationForm.quotationNo" disabled>
+      </mat-form-field>
 
-                <mat-form-field appearance="outline">
-                    <mat-label>Brand</mat-label>
-                    <input matInput [(ngModel)]="productForm.brand" name="brand" required>
-                </mat-form-field>
-            </div>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Quotation Date</mat-label>
+        <input matInput [matDatepicker]="picker" [(ngModel)]="quotationForm.quotationDate">
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
 
-            <div class="form-row">
-                <mat-form-field appearance="outline">
-                    <mat-label>Cost Price</mat-label>
-                    <input matInput type="number" [(ngModel)]="productForm.costPrice" name="costPrice" required>
-                </mat-form-field>
+      <div class="quotation-items-section">
+        <div class="section-header">
+          <h3>Quotation Items</h3>
+          <button mat-raised-button color="primary" (click)="openAddItemDialog()">
+            <mat-icon>add</mat-icon>
+            Add Item
+          </button>
+        </div>
 
-                <mat-form-field appearance="outline">
-                    <mat-label>Sale Price</mat-label>
-                    <input matInput type="number" [(ngModel)]="productForm.salePrice" name="salePrice" required>
-                </mat-form-field>
-            </div>
+        <mtx-grid
+          [data]="quotationForm.items || []"
+          [columns]="itemColumns"
+          [loading]="false"
+          [showToolbar]="false"
+          [pageSize]="5"
+          [pageSizeOptions]="[5, 10, 25, 50]">
+        </mtx-grid>
 
-            <div class="form-row">
-                <mat-form-field appearance="outline">
-                    <mat-label>Quantity</mat-label>
-                    <input matInput type="number" [(ngModel)]="productForm.quantity" name="quantity" required>
-                </mat-form-field>
+        <div class="total-section">
+          <h3>Total Amount: ${{ quotationForm.totalAmount.toFixed(2) }}</h3>
+        </div>
+      </div>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Cancel</button>
+    <button mat-raised-button color="primary" [mat-dialog-close]="quotationForm">Save</button>
+  </mat-dialog-actions>
+</ng-template>
 
-                <mat-form-field appearance="outline">
-                    <mat-label>Unit</mat-label>
-                    <mat-select [(ngModel)]="productForm.unit" name="unit" required>
-                        @for (unit of units; track unit.value) {
-                            <mat-option [value]="unit.value">{{ unit.label }}</mat-option>
-                        }
-                    </mat-select>
-                </mat-form-field>
-            </div>
+<!-- Customer Dialog -->
+<ng-template #customerDialog>
+  <h2 mat-dialog-title>{{ isCustomerEditMode ? 'Edit' : 'Add' }} Customer</h2>
+  <mat-dialog-content>
+    <div class="customer-form">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Name</mat-label>
+        <input matInput [(ngModel)]="customerForm.name" required>
+      </mat-form-field>
 
-            <div class="form-row">
-                <mat-form-field appearance="outline">
-                    <mat-label>Expiry Date</mat-label>
-                    <input matInput [matDatepicker]="picker" [(ngModel)]="productForm.expiryDate" name="expiryDate">
-                    <mat-datepicker-toggle matSuffix [for]="picker" />
-                    <mat-datepicker #picker />
-                </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Phone</mat-label>
+        <input matInput [(ngModel)]="customerForm.phone" required>
+      </mat-form-field>
 
-                <mat-form-field appearance="outline">
-                    <mat-label>Alert Quantity</mat-label>
-                    <input matInput type="number" [(ngModel)]="productForm.alertQuantity" name="alertQuantity" required>
-                </mat-form-field>
-            </div>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Email</mat-label>
+        <input matInput [(ngModel)]="customerForm.email" type="email" required>
+      </mat-form-field>
 
-            <mat-form-field appearance="outline" style="width: 100%;">
-                <mat-label>Image URL</mat-label>
-                <input matInput [(ngModel)]="productForm.imageUrl" name="imageUrl">
-            </mat-form-field>
-        </form>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-        <button mat-button mat-dialog-close>Cancel</button>
-        <button mat-raised-button color="primary" [mat-dialog-close]="productForm">
-            {{ isEditMode ? 'Update' : 'Add' }}
-        </button>
-    </mat-dialog-actions>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Address</mat-label>
+        <textarea matInput [(ngModel)]="customerForm.address" required rows="3"></textarea>
+      </mat-form-field>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Cancel</button>
+    <button mat-raised-button color="primary" [mat-dialog-close]="customerForm">Save</button>
+  </mat-dialog-actions>
 </ng-template>

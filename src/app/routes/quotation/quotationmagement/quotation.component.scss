@@ -1,0 +1,127 @@
+.quotation-actions {
+  margin: 1rem 0;
+  padding: 0 1rem;
+
+  .actions-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+
+    .search-container {
+      flex: 1;
+      max-width: 500px;
+
+      .search-field {
+        width: 100%;
+      }
+    }
+
+    .button-group {
+      display: flex;
+      gap: 0.5rem;
+    }
+  }
+}
+
+.customer-card,
+.quotation-card {
+  margin: 1rem;
+}
+
+.quotation-details {
+  padding: 16px;
+
+  .quotation-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+
+    p {
+      margin: 0;
+    }
+  }
+}
+
+.quotation-form,
+.customer-form,
+.quotation-item-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+
+  .full-width {
+    width: 100%;
+  }
+}
+
+.quotation-items-section {
+  margin-top: 1rem;
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    h3 {
+      margin: 0;
+    }
+  }
+
+  .total-section {
+    margin-top: 1rem;
+    text-align: right;
+
+    h3 {
+      margin: 0;
+      color: #1976d2;
+    }
+  }
+}
+
+.view-quotation-details {
+  padding: 16px;
+
+  .quotation-info-section {
+    margin-bottom: 24px;
+
+    h3 {
+      margin-bottom: 16px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+
+      .info-item {
+        .label {
+          font-weight: bold;
+          margin-right: 8px;
+        }
+      }
+    }
+  }
+
+  .quotation-items-section {
+    h3 {
+      margin-bottom: 16px;
+    }
+  }
+}
+
+.add-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1976d2;
+  cursor: pointer;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}

@@ -33,7 +33,7 @@
     <mtx-grid
       [data]="customers"
       [columns]="customerColumns"
-      [loading]="false"
+      [loading]="customerLoading"
       [showToolbar]="true"
       [pageSize]="5"
       [pageSizeOptions]="[5, 10, 25, 50]">
@@ -94,7 +94,7 @@
         <mat-label>Product</mat-label>
         <mat-select [(ngModel)]="saleItemForm.productId" (selectionChange)="onProductChange(saleItemForm)">
           <mat-option *ngFor="let product of products" [value]="product.id">
-            {{ product.name }} - ${{ product.price.toFixed(2) }}
+            {{ product.name }} - ${{ product.salePrice.toFixed(2) }}
           </mat-option>
         </mat-select>
       </mat-form-field>
@@ -140,22 +140,22 @@
         </mat-select>
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="full-width">
+      <!-- <mat-form-field appearance="outline" class="full-width">
         <mat-label>User</mat-label>
         <mat-select [(ngModel)]="saleForm.userId">
           <mat-option *ngFor="let user of users" [value]="user.id">
             {{ user.name }}
           </mat-option>
         </mat-select>
-      </mat-form-field>
+      </mat-form-field> -->
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Invoice No</mat-label>
-        <input matInput [(ngModel)]="saleForm.invoiceNo">
+        <input matInput [(ngModel)]="saleForm.invoiceNo" disabled>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Purchase Date</mat-label>
+        <mat-label>Sales Date</mat-label>
         <input matInput [matDatepicker]="picker" [(ngModel)]="saleForm.purchaseDate">
         <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-datepicker #picker></mat-datepicker>
