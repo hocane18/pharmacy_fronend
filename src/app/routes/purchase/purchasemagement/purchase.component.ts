@@ -444,7 +444,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
         ...purchaseData,
         id: (this.purchases.length + 1).toString(),
       };
-      this.savePurchase(newPurchase);
+      this.addPurchase(newPurchase);
       this.purchases.push(newPurchase);
     }
   }
@@ -501,13 +501,11 @@ export class PurchaseComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.itemtableload = true;
-        console.log('itemurchase' + result);
-        console.log(result);
-
         result.total = this.calculateItemTotal(result);
         const product = this.products.find(p => p.id === result.productId);
         result.productName = product ? product.name : '';
         this.purchaseForm.items.push(result);
+        this.purchaseForm.items = [...this.purchaseForm.items];
         console.log(this.purchaseForm.items);
         this.updatePurchaseTotal();
         this.itemtableload = false;
@@ -527,6 +525,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
         if (index > -1) {
           result.total = this.calculateItemTotal(result);
           this.purchaseForm.items[index] = result;
+          this.purchaseForm.items = [...this.purchaseForm.items];
           this.updatePurchaseTotal();
         }
       }
@@ -537,6 +536,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
     const index = this.purchaseForm.items.findIndex((i: PurchaseItem) => i.id === item.id);
     if (index > -1) {
       this.purchaseForm.items.splice(index, 1);
+      this.purchaseForm.items = [...this.purchaseForm.items];
       this.updatePurchaseTotal();
     }
   }
@@ -774,7 +774,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       TotalAmount: purchase.totalAmount,
       InvoiceNo: purchase.invoiceNo,
       PurchaseDate: purchase.purchaseDate,
-      Items: purchase.items.map((item: PurchaseItem) => ({
+      PurchaseItems: purchase.items.map((item: PurchaseItem) => ({
         ProductId: item.productId,
         Quantity: item.quantity,
         Price: item.price,
@@ -799,6 +799,49 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       })
       .catch(() => {
         this.snackBar.open('Failed to add purchase. Please try again.', 'Close', {
+          duration: 2000,
+        });
+        this.isLoading = false;
+      });
+  }
+
+  editPurchase(purchase: any) {
+    this.isLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}Purchase/${purchase.id}`;
+    const token = localStorage.getItem('ng-matero-token');
+
+    // Prepare data to match PurchaseDto structure
+    const fordata = {
+      SupplierId: purchase.supplierId,
+      UserId: purchase.userId,
+      TotalAmount: purchase.totalAmount,
+      InvoiceNo: purchase.invoiceNo,
+      PurchaseDate: purchase.purchaseDate,
+      PurchaseItems: purchase.items.map((item: PurchaseItem) => ({
+        ProductId: item.productId,
+        Quantity: item.quantity,
+        Price: item.price,
+        Total: item.total,
+      })),
+    };
+
+    fetch(apiUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+      body: fordata ? JSON.stringify(fordata) : null,
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.purchases.push(data);
+        this.snackBar.open('Purchase updated successfully!', 'Close', { duration: 2000 });
+
+        this.isLoading = false;
+      })
+      .catch(() => {
+        this.snackBar.open('Failed to update purchase. Please try again.', 'Close', {
           duration: 2000,
         });
         this.isLoading = false;
