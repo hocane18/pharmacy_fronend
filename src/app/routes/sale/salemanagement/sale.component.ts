@@ -20,6 +20,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDividerModule } from '@angular/material/divider';
 import { Sale, SaleItem, Customer } from './sale.interface';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
+import { environment } from '@env/environment';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-sale',
@@ -56,6 +58,7 @@ export class SaleComponent implements OnInit, OnDestroy {
   private readonly _destroy$ = new Subject<void>();
   private readonly dialog = inject(MatDialog);
   private readonly translate = inject(TranslateService);
+   private readonly snackBar = inject(MatSnackBar);
 
   dialogData: any = {
     sale: null
@@ -87,11 +90,23 @@ export class SaleComponent implements OnInit, OnDestroy {
     total: 0,
   };
 
-  products = [
-    { id: 1, name: 'Product A', price: 10.00 },
-    { id: 2, name: 'Product B', price: 15.00 },
-    { id: 3, name: 'Product C', price: 20.00 },
-  ];
+
+  products: {
+    id: number;
+    name: string;
+    categoryId: number;
+    category: string;
+    barcode: string;
+    brand: string;
+    costPrice: number;
+    salePrice: number;
+    quantity: number;
+    unit: string;
+    expiryDate: string;
+    alertQuantity: number;
+    createdAt: string;
+    imageUrl: string;
+  }[] = [];
 
   customers: Customer[] = [
     {
@@ -244,7 +259,7 @@ export class SaleComponent implements OnInit, OnDestroy {
           type: 'icon',
           icon: 'visibility',
           tooltip: 'View',
-          click: record => this.view(record),
+          click: record => this.printSale(record),
         },
         {
           type: 'icon',
@@ -327,7 +342,7 @@ export class SaleComponent implements OnInit, OnDestroy {
       ],
     },
   ];
-
+ customerLoading = false;
   isLoading = false;
   multiSelectable = false;
   rowSelectable = false;
@@ -348,7 +363,9 @@ export class SaleComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.filteredSales = [...this.sales];
-    
+    this.loadProducts();  
+     this.loadCustomer();
+     this.loadSales();
     this.searchSubject
       .pipe(
         debounceTime(300),
@@ -467,6 +484,8 @@ export class SaleComponent implements OnInit, OnDestroy {
         ...saleData,
         id: this.sales.length + 1,
       };
+      this.addSales(newSale);
+      this.loadSales();
       this.sales.push(newSale);
     }
   }
@@ -522,6 +541,7 @@ export class SaleComponent implements OnInit, OnDestroy {
       if (result) {
         result.total = this.calculateItemTotal(result);
         this.saleForm.items?.push(result);
+        this.saleForm.items = [...this.saleForm.items];
         this.updateSaleTotal();
       }
     });
@@ -539,6 +559,7 @@ export class SaleComponent implements OnInit, OnDestroy {
         if (index !== undefined && index > -1) {
           result.total = this.calculateItemTotal(result);
           this.saleForm.items![index] = result;
+            this.saleForm.items = [...this.saleForm.items];
           this.updateSaleTotal();
         }
       }
@@ -549,6 +570,7 @@ export class SaleComponent implements OnInit, OnDestroy {
     const index = this.saleForm.items?.findIndex((i: SaleItem) => i.id === item.id);
     if (index !== undefined && index > -1) {
       this.saleForm.items?.splice(index, 1);
+      this.saleForm.items = [...this.saleForm.items];
       this.updateSaleTotal();
     }
   }
@@ -556,7 +578,7 @@ export class SaleComponent implements OnInit, OnDestroy {
   onProductChange(item: SaleItem): void {
     const product = this.products.find(p => p.id === item.productId);
     if (product) {
-      item.price = product.price;
+      item.price = product.salePrice;
       item.total = this.calculateItemTotal(item);
     }
   }
@@ -627,6 +649,14 @@ export class SaleComponent implements OnInit, OnDestroy {
         id: this.customers.length + 1,
         createdAt: new Date(),
       };
+      const newSyCustomer = {
+        name: newCustomer.name,
+        phone: newCustomer.phone,
+        address: newCustomer.address,
+        email: newCustomer.email,
+      };
+      this.addCustomer(newSyCustomer);
+      this.loadCustomer();
       this.customers.push(newCustomer);
     }
   }
@@ -657,6 +687,14 @@ export class SaleComponent implements OnInit, OnDestroy {
       id: this.customers.length + 1,
       createdAt: new Date(),
     };
+    const newSyCustomer = {
+        name: newCustomer.name,
+        phone: newCustomer.phone,
+        address: newCustomer.address,
+        email: newCustomer.email,
+      };
+      this.addCustomer(newSyCustomer);
+      this.loadCustomer();
     this.customers.push(newCustomer);
     this.saleForm.customerId = newCustomer.id;
     this.dialog.closeAll();
@@ -666,4 +704,278 @@ export class SaleComponent implements OnInit, OnDestroy {
     this._destroy$.next();
     this._destroy$.complete();
   }
+
+  loadProducts() {
+    this.isLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}ProductAndCategory/products`;
+    const token = localStorage.getItem('ng-matero-token');
+    fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(response => response.json())
+      .then(data => {
+        this.products = data;
+        this.isLoading = false;
+      })
+      .catch(error => {
+        console.error('Error loading categories:', error);
+        this.isLoading = false;
+      });
+  }
+   loadCustomer() {
+    this.customerLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}customer/All`;
+    const token = localStorage.getItem('ng-matero-token');
+
+    fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.customers = data || [];
+        console.log(this.customers);
+        this.customerLoading = false;
+      })
+      .catch(() => {
+        this.customerLoading = false;
+      });
+  }
+  addCustomer(supplier: any) {
+    this.customerLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}Customer/add`;
+    const token = localStorage.getItem('ng-matero-token');
+
+    // Prepare data to match SupplierDto structure
+    const fordata = {
+      Name: supplier.name,
+      Phone: supplier.phone,
+      Address: supplier.address,
+      Email: supplier.email,
+    };
+    fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+      body: fordata ? JSON.stringify(fordata) : null,
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.customers.push(data);
+        this.snackBar.open('Supplier added successfully!', 'Close', { duration: 2000 });
+
+        this.customerLoading = false;
+      })
+      .catch(() => {
+        this.snackBar.open('Failed to add supplier. Please try again.', 'Close', {
+          duration: 2000,
+        });
+        this.customerLoading = false;
+      });
+  }
+private mapSaleDtoToSale(dto: any): Sale {
+  return {
+    id: dto.id,
+    customerId: dto.customerId,
+    userId: dto.userId,
+    totalAmount: dto.totalAmount,
+    invoiceNo: dto.invoiceNo,
+    purchaseDate: new Date(dto.purchaseDate),
+    items: (dto.items || []).map((item: any) => ({
+      id: item.id,
+      saleId:  dto.id,
+      productId: item.productId,
+      quantity: item.quantity,
+      price: item.price,
+      total: item.total
+    }))
+  };
+}
+
+
+  loadSales() {
+      this.isLoading = true;
+      const apiUrl = `${environment.apiUrl || ''}sales`;
+      const token = localStorage.getItem('ng-matero-token');
+  
+      fetch(apiUrl, {
+        headers: {
+          'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+          'Content-Type': 'application/json',
+        },
+      })
+        .then(res => res.json())
+        .then(data => {
+          this.sales = Array.isArray(data) ? data.map(s => this.mapSaleDtoToSale(s)) : [];
+          console.log('Mapped sales:', this.sales);
+          this.filteredSales = [...this.sales];
+          console.log('Loaded purchases:', this.sales);
+          this.isLoading = false;
+        })
+        .catch(error => {
+          console.error('Error loading purchases:', error);
+          this.sales = [];
+          this.filteredSales = [];
+          this.isLoading = false;
+        });
+    }
+
+      addSales(sale: any) {
+        this.isLoading = true;
+        const apiUrl = `${environment.apiUrl || ''}sales`;
+        const token = localStorage.getItem('ng-matero-token');
+    
+        // Prepare data to match PurchaseDto structure
+        const fordata = {
+          CustomerId: sale.customerId,
+          UserId: 0,
+          TotalAmount: sale.totalAmount,
+          InvoiceNo: '',
+          salesDate: sale.saleData,
+          salesItems: sale.items.map((item: SaleItem) => ({
+            ProductId: item.productId,
+            Quantity: item.quantity,
+            Price: item.price,
+            Total: item.total,
+          })),
+        };
+    
+        fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+            'Content-Type': 'application/json',
+          },
+          body: fordata ? JSON.stringify(fordata) : null,
+        })
+          .then(res => res.json())
+          .then(data => {
+            this.sales.push(data);
+            this.filteredSales = [...this.sales];
+            this.snackBar.open('sales added successfully!', 'Close', { duration: 2000 });
+            this.isLoading = false;
+          })
+          .catch(error => {
+            console.error('Error adding sale:', error);
+            this.snackBar.open('Failed to add sale. Please try again.', 'Close', {
+              duration: 2000,
+            });
+            this.isLoading = false;
+          });
+      }
+
+     printSale(sale: Sale): void {
+  // Open a new window
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) {
+    this.snackBar.open('Please allow popups for printing', 'Close', { duration: 3000 });
+    return;
+  }
+
+  // Get customer and user names
+  const customerName = this.getCustomerName(sale.customerId);
+  const userName = this.getUserName(sale.userId);
+  const saleDate = new Date(sale.purchaseDate).toLocaleDateString();
+  const items = sale.items || [];
+
+  // Build the HTML content
+  const content = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Sales Invoice - ${sale.invoiceNo}</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
+          .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+          .header h1 { color: #2c3e50; margin-bottom: 10px; }
+          .header h2 { color: #7f8c8d; margin: 0; }
+          .details-container { display: flex; justify-content: space-between; margin-bottom: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 5px; }
+          .details-section { flex: 1; }
+          .details-section h3 { color: #2c3e50; margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+          .details-section p { margin: 8px 0; font-size: 14px; }
+          .details-section strong { color: #34495e; min-width: 120px; display: inline-block; }
+          .items-section { margin-top: 30px; }
+          .items-section h3 { color: #2c3e50; margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+          table { width: 100%; border-collapse: collapse; margin: 20px 0; background-color: white; }
+          th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+          th { background-color: #f5f5f5; color: #2c3e50; font-weight: bold; }
+          tr:nth-child(even) { background-color: #f9f9f9; }
+          td { color: #2c3e50; }
+          .total-section { text-align: right; margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 5px; }
+          .total-section p { font-size: 16px; margin: 5px 0; }
+          .total-amount { font-size: 20px; font-weight: bold; color: #2c3e50; }
+          .no-print { text-align: center; margin-top: 20px; }
+          .print-button { padding: 10px 20px; background-color: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+          .print-button:hover { background-color: #2980b9; }
+          @media print { .no-print { display: none; } body { margin: 0; } .details-container { background-color: white !important; -webkit-print-color-adjust: exact; } .total-section { background-color: white !important; -webkit-print-color-adjust: exact; } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>Sales Invoice</h1>
+          <h2>${sale.invoiceNo}</h2>
+        </div>
+        
+        <div class="details-container">
+          <div class="details-section">
+            <h3>Sale Information</h3>
+            <p><strong>Invoice No:</strong> ${sale.invoiceNo}</p>
+            <p><strong>Sale Date:</strong> ${saleDate}</p>
+            <p><strong>Total Amount:</strong> $${sale.totalAmount.toFixed(2)}</p>
+          </div>
+          <div class="details-section">
+            <h3>Contact Information</h3>
+            <p><strong>Customer:</strong> ${customerName}</p>
+            <p><strong>User:</strong> ${userName}</p>
+          </div>
+        </div>
+
+        <div class="items-section">
+          <h3>Sale Items</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${items.map((item: SaleItem) => `
+                <tr>
+                  <td>${this.getProductName(item.productId)}</td>
+                  <td>${item.quantity}</td>
+                  <td>$${item.price.toFixed(2)}</td>
+                  <td>$${item.total.toFixed(2)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="total-section">
+          <p class="total-amount">Total Amount: $${sale.totalAmount.toFixed(2)}</p>
+        </div>
+
+        <div class="no-print">
+          <button class="print-button" onclick="window.print()">Print Invoice</button>
+        </div>
+      </body>
+    </html>
+  `;
+
+  // Write the content to the new window
+  printWindow.document.write(content);
+  printWindow.document.close();
+}
+
 } 
