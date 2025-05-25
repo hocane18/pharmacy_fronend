@@ -140,18 +140,9 @@
         </mat-select>
       </mat-form-field>
 
-      <!-- <mat-form-field appearance="outline" class="full-width">
-        <mat-label>User</mat-label>
-        <mat-select [(ngModel)]="purchaseForm.userId">
-          <mat-option *ngFor="let user of users" [value]="user.id">
-            {{ user.name }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field> -->
-
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Invoice No</mat-label>
-        <input matInput [(ngModel)]="purchaseForm.invoiceNo" disabled>
+        <input matInput [(ngModel)]="purchaseForm.invoiceNo" [readonly]="true">
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
@@ -170,14 +161,33 @@
           </button>
         </div>
 
-        <mtx-grid
-          [data]="purchaseForm.items"
-          [columns]="itemColumns"
-          [loading]="itemtableload"
-          [showToolbar]="false"
-          [pageSize]="5"
-          [pageSizeOptions]="[5, 10, 25, 50]">
-        </mtx-grid>
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Quantity</th>
+              <th>Price</th>
+              <th>Total</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of purchaseForm.items">
+              <td>{{ item.productName }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>${{ item.price.toFixed(2) }}</td>
+              <td>${{ item.total.toFixed(2) }}</td>
+              <td>
+                <button mat-icon-button color="primary" (click)="editItem(item)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" (click)="deleteItem(item)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
         <div class="total-section">
           <h3>Total Amount: ${{ purchaseForm.totalAmount.toFixed(2) }}</h3>
@@ -260,19 +270,30 @@
 
       <div class="purchase-items-section">
         <h3>Purchase Items</h3>
-        <mtx-grid
-          [data]="purchaseForm.items"
-          [columns]="itemColumns"
-          [loading]="false"
-          [showToolbar]="false"
-          [pageSize]="5"
-          [pageSizeOptions]="[5, 10, 25, 50]">
-        </mtx-grid>
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Quantity</th>
+              <th>Price</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of dialogData.purchase.purchaseItems">
+              <td>{{ getProductName(item.productId) }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>${{ item.price.toFixed(2) }}</td>
+              <td>${{ item.total.toFixed(2) }}</td>
+            </tr>
+          </tbody>
+        </table>
                 </div>
             </div>
   </mat-dialog-content>
   <mat-dialog-actions align="end">
     <button mat-button mat-dialog-close>Close</button>
+    <button mat-raised-button color="primary" (click)="printPurchase(dialogData.purchase)">Print</button>
   </mat-dialog-actions>
 </ng-template>
 

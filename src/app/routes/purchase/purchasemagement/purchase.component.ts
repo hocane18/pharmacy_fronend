@@ -240,15 +240,9 @@ export class PurchaseComponent implements OnInit, OnDestroy {
         },
         {
           type: 'icon',
-          color: 'warn',
-          icon: 'delete',
-          tooltip: 'Delete',
-          pop: {
-            title: 'Confirm Delete',
-            closeText: 'Cancel',
-            okText: 'Delete',
-          },
-          click: record => this.delete(record),
+          icon: 'print',
+          tooltip: 'Print PDF',
+          click: record => this.printPurchase(record),
         },
       ],
     },
@@ -391,17 +385,40 @@ export class PurchaseComponent implements OnInit, OnDestroy {
 
   edit(purchase: any): void {
     this.isEditMode = true;
-    this.purchaseForm = { ...purchase };
+    this.purchaseForm = {
+      id: purchase.id,
+      supplierId: purchase.supplierId,
+      userId: purchase.userId,
+      totalAmount: purchase.totalAmount,
+      invoiceNo: purchase.invoiceNo,
+      purchaseDate: new Date(purchase.purchaseDate),
+      items: purchase.purchaseItems.map((item: any) => ({
+        productId: item.productId,
+        productName: this.getProductName(item.productId),
+        quantity: item.quantity,
+        price: item.price,
+        total: item.total
+      }))
+    };
 
     const dialogRef = this.dialog.open(this.purchaseDialog, {
-      width: '600px',
-      data: { isEditMode: this.isEditMode, purchaseForm: this.purchaseForm },
+      width: '800px',
+      data: this.purchaseForm
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.savePurchase(result);
       }
+      this.isEditMode = false;
+      this.purchaseForm = {
+        supplierId: 0,
+        userId: '',
+        totalAmount: 0,
+        invoiceNo: '',
+        purchaseDate: new Date(),
+        items: []
+      };
     });
   }
 
@@ -664,11 +681,15 @@ export class PurchaseComponent implements OnInit, OnDestroy {
     })
       .then(res => res.json())
       .then(data => {
-        this.filteredPurchases = data || {};
-        console.log(this.filteredPurchases);
+        this.purchases = Array.isArray(data) ? data : [];
+        this.filteredPurchases = [...this.purchases];
+        console.log('Loaded purchases:', this.purchases);
         this.isLoading = false;
       })
-      .catch(() => {
+      .catch(error => {
+        console.error('Error loading purchases:', error);
+        this.purchases = [];
+        this.filteredPurchases = [];
         this.isLoading = false;
       });
   }
@@ -793,11 +814,12 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       .then(res => res.json())
       .then(data => {
         this.purchases.push(data);
+        this.filteredPurchases = [...this.purchases];
         this.snackBar.open('Purchase added successfully!', 'Close', { duration: 2000 });
-
         this.isLoading = false;
       })
-      .catch(() => {
+      .catch(error => {
+        console.error('Error adding purchase:', error);
         this.snackBar.open('Failed to add purchase. Please try again.', 'Close', {
           duration: 2000,
         });
@@ -831,21 +853,234 @@ export class PurchaseComponent implements OnInit, OnDestroy {
         'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
         'Content-Type': 'application/json',
       },
-      body: fordata ? JSON.stringify(fordata) : null,
+      body: JSON.stringify(fordata),
     })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return res.json();
+      })
       .then(data => {
-        this.purchases.push(data);
+        // Update the purchase in both arrays
+        const index = this.purchases.findIndex(p => p.id === data.id);
+        if (index !== -1) {
+          this.purchases[index] = data;
+          this.filteredPurchases = [...this.purchases];
+        }
         this.snackBar.open('Purchase updated successfully!', 'Close', { duration: 2000 });
-
         this.isLoading = false;
       })
-      .catch(() => {
+      .catch(error => {
+        console.error('Error updating purchase:', error);
         this.snackBar.open('Failed to update purchase. Please try again.', 'Close', {
           duration: 2000,
         });
         this.isLoading = false;
       });
+  }
+
+  printPurchase(purchase: any): void {
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      this.snackBar.open('Please allow popups for printing', 'Close', { duration: 3000 });
+      return;
+    }
+
+    // Get the purchase details
+    const supplierName = this.getSupplierName(purchase.supplierId);
+    const userName = this.getUserName(purchase.userId);
+    const purchaseDate = new Date(purchase.purchaseDate).toLocaleDateString();
+    const items = purchase.purchaseItems || [];
+
+    // Create the HTML content for the PDF
+    const content = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Purchase Invoice - ${purchase.invoiceNo}</title>
+          <style>
+            body { 
+              font-family: Arial, sans-serif; 
+              margin: 20px;
+              color: #333;
+            }
+            .header { 
+              text-align: center; 
+              margin-bottom: 30px;
+              border-bottom: 2px solid #333;
+              padding-bottom: 20px;
+            }
+            .header h1 {
+              color: #2c3e50;
+              margin-bottom: 10px;
+            }
+            .header h2 {
+              color: #7f8c8d;
+              margin: 0;
+            }
+            .details-container {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 30px;
+              padding: 20px;
+              background-color: #f8f9fa;
+              border-radius: 5px;
+            }
+            .details-section {
+              flex: 1;
+            }
+            .details-section h3 {
+              color: #2c3e50;
+              margin-bottom: 15px;
+              border-bottom: 1px solid #ddd;
+              padding-bottom: 5px;
+            }
+            .details-section p {
+              margin: 8px 0;
+              font-size: 14px;
+            }
+            .details-section strong {
+              color: #34495e;
+              min-width: 120px;
+              display: inline-block;
+            }
+            .items-section {
+              margin-top: 30px;
+            }
+            .items-section h3 {
+              color: #2c3e50;
+              margin-bottom: 15px;
+              border-bottom: 1px solid #ddd;
+              padding-bottom: 5px;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 20px 0;
+              background-color: white;
+            }
+            th, td {
+              border: 1px solid #ddd;
+              padding: 12px;
+              text-align: left;
+            }
+            th {
+              background-color: #f5f5f5;
+              color: #2c3e50;
+              font-weight: bold;
+            }
+            tr:nth-child(even) {
+              background-color: #f9f9f9;
+            }
+            td {
+              color: #2c3e50;
+            }
+            .total-section {
+              text-align: right;
+              margin-top: 20px;
+              padding: 15px;
+              background-color: #f8f9fa;
+              border-radius: 5px;
+            }
+            .total-section p {
+              font-size: 16px;
+              margin: 5px 0;
+            }
+            .total-amount {
+              font-size: 20px;
+              font-weight: bold;
+              color: #2c3e50;
+            }
+            .no-print {
+              text-align: center;
+              margin-top: 20px;
+            }
+            .print-button {
+              padding: 10px 20px;
+              background-color: #3498db;
+              color: white;
+              border: none;
+              border-radius: 5px;
+              cursor: pointer;
+              font-size: 16px;
+            }
+            .print-button:hover {
+              background-color: #2980b9;
+            }
+            @media print {
+              .no-print { display: none; }
+              body { margin: 0; }
+              .details-container {
+                background-color: white !important;
+                -webkit-print-color-adjust: exact;
+              }
+              .total-section {
+                background-color: white !important;
+                -webkit-print-color-adjust: exact;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Purchase Invoice</h1>
+            <h2>${purchase.invoiceNo}</h2>
+          </div>
+          
+          <div class="details-container">
+            <div class="details-section">
+              <h3>Purchase Information</h3>
+              <p><strong>Invoice No:</strong> ${purchase.invoiceNo}</p>
+              <p><strong>Purchase Date:</strong> ${purchaseDate}</p>
+              <p><strong>Total Amount:</strong> $${purchase.totalAmount.toFixed(2)}</p>
+            </div>
+            <div class="details-section">
+              <h3>Contact Information</h3>
+              <p><strong>Supplier:</strong> ${supplierName}</p>
+              <p><strong>User:</strong> ${userName}</p>
+            </div>
+          </div>
+
+          <div class="items-section">
+            <h3>Purchase Items</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Quantity</th>
+                  <th>Price</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${items.map((item: PurchaseItem) => `
+                  <tr>
+                    <td>${this.getProductName(item.productId)}</td>
+                    <td>${item.quantity}</td>
+                    <td>$${item.price.toFixed(2)}</td>
+                    <td>$${item.total.toFixed(2)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="total-section">
+            <p class="total-amount">Total Amount: $${purchase.totalAmount.toFixed(2)}</p>
+          </div>
+
+          <div class="no-print">
+            <button class="print-button" onclick="window.print()">Print Invoice</button>
+          </div>
+        </body>
+      </html>
+    `;
+
+    // Write the content to the new window
+    printWindow.document.write(content);
+    printWindow.document.close();
   }
 
   ngOnDestroy() {
