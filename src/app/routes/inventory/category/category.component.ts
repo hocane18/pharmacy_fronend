@@ -20,6 +20,7 @@ import { MtxGridColumn, MtxGridModule } from '@ng-matero/extensions/grid';
 import { TranslateService } from '@ngx-translate/core';
 import { MtxDialog } from '@ng-matero/extensions/dialog';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { environment } from '@env/environment';
 
 @Component({
   selector: 'app-permissions-role-switching',
@@ -51,7 +52,12 @@ export class CategoryComponent implements OnInit, OnDestroy {
   private readonly permissionsSrv = inject(NgxPermissionsService);
   private readonly dialog = inject(MatDialog);
   private readonly translate = inject(TranslateService);
-
+  categories: {
+    id: string;
+    name: string;
+    description: string;
+    prodcuts: any[];
+  }[] = [];
   currentRole = '';
   currentPermissions: string[] = [];
   isEditMode = false;
@@ -166,6 +172,7 @@ export class CategoryComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.currentRole = Object.keys(this.rolesSrv.getRoles())[0];
     this.currentPermissions = Object.keys(this.permissionsSrv.getPermissions());
+    this.loadCategories();
   }
 
   openAddRoleDialog(): void {
@@ -253,5 +260,49 @@ export class CategoryComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this._destroy$.next();
     this._destroy$.complete();
+  }
+  loadCategories() {
+    this.isLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}ProductAndCategory/categories`;
+    const token = localStorage.getItem('ng-matero-token');
+
+    fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.categories = data || [];
+        console.log(this.categories);
+        this.isLoading = false;
+      })
+      .catch(() => {
+        this.isLoading = false;
+      });
+  }
+
+  saveCategory(category: any) {
+    this.isLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}ProductAndCategory/category`;
+    const token = localStorage.getItem('ng-matero-token');
+
+    fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(category),
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.isLoading = false;
+        this.loadCategories();
+      })
+      .catch(() => {
+        this.isLoading = false;
+      });
   }
 }
