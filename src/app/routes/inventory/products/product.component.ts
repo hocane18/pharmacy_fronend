@@ -318,6 +318,8 @@ export class ProductComponent implements OnInit, OnDestroy {
           image: this.previewUrl,
         };
       }
+      this.editProducts(this.products[index]);
+      this.loadProducts();
     } else {
       const newProduct = {
         ...productData,
@@ -387,6 +389,46 @@ export class ProductComponent implements OnInit, OnDestroy {
     const token = localStorage.getItem('ng-matero-token');
     fetch(apiUrl, {
       method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+      },
+      body: formData,
+    })
+      .then(response => response.json())
+      .then(data => {
+        this.snackBar.open('Products added successfully!', 'Close', { duration: 2000 });
+        this.isLoading = false;
+        console.log('Products saved successfully:', data);
+      })
+      .catch(error => {
+        this.isLoading = false;
+        this.snackBar.open('Error saving products. Please try again.', 'Close', { duration: 3000 });
+        console.error('Error saving products:', error);
+      });
+  }
+  editProducts(products: any): void {
+    console.log('Saving products:', products);
+    const formData = new FormData();
+    formData.append('Name', products.name);
+    formData.append('CategoryId', products.categoryId.toString());
+    formData.append('Barcode', products.barcode);
+    formData.append('Brand', products.brand);
+    formData.append('CostPrice', products.costPrice.toString());
+    formData.append('SalePrice', products.salePrice.toString());
+    formData.append('Unit', products.unit);
+    formData.append(
+      'ExpiryDate',
+      products.expiryDate ? new Date(products.expiryDate).toISOString() : ''
+    );
+    formData.append('AlertQuantity', products.alertQuantity.toString());
+    if (this.selectedFile) {
+      formData.append('Image', this.selectedFile);
+    }
+    this.isLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}ProductAndCategory/product/${products.id}`;
+    const token = localStorage.getItem('ng-matero-token');
+    fetch(apiUrl, {
+      method: 'PUT',
       headers: {
         Authorization: `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
       },
