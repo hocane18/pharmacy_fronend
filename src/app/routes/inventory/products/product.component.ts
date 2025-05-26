@@ -329,7 +329,7 @@ export class ProductComponent implements OnInit, OnDestroy {
       };
       this.saveProducts(newProduct);
       this.loadProducts();
-      this.products.push(newProduct);
+    //  this.products.push(newProduct);
     }
   }
 

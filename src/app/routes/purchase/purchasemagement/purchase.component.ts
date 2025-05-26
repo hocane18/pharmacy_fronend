@@ -169,7 +169,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
     },
     {
       header: 'Supplier',
-      field: 'supplierId',
+      field: 'supplier', // Use a dummy field, since we use formatter
       sortable: true,
       width: '120px',
       formatter: (row: any) => this.getSupplierName(row.supplierId),
@@ -446,7 +446,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       };
       this.addPurchase(newPurchase);
       this.loadPurchase();
-      this.purchases.push(newPurchase);
+      //this.purchases.push(newPurchase);
     }
   }
 
@@ -463,8 +463,8 @@ export class PurchaseComponent implements OnInit, OnDestroy {
     return product ? product.name : productId.toString();
   }
 
-  getSupplierName(supplierId: number): string {
-    const supplier = this.suppliers.find(s => s.id === supplierId);
+  getSupplierName(supplierId: number | string): string {
+    const supplier = this.suppliers.find(s => String(s.id) === String(supplierId));
     return supplier ? supplier.name : supplierId.toString();
   }
 
@@ -667,7 +667,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       .then(data => {
         this.purchases = Array.isArray(data) ? data : [];
         this.filteredPurchases = [...this.purchases];
-        console.log('Loaded purchases:', this.purchases);
+        
         this.isLoading = false;
       })
       .catch(error => {
@@ -698,7 +698,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
           email: s.email || s.Email,
           createdAt: s.createdAt || s.CreatedAt,
         }));
-        console.log(this.suppliers);
+      this.suppliers = [...this.suppliers];
         this.supplierLoading = false;
       })
       .catch(() => {
@@ -728,7 +728,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
     })
       .then(res => res.json())
       .then(data => {
-        this.suppliers.push(data);
+       // this.suppliers.push(data);
         this.snackBar.open('Supplier added successfully!', 'Close', { duration: 2000 });
 
         this.supplierLoading = false;
@@ -804,8 +804,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
     })
       .then(res => res.json())
       .then(data => {
-        this.purchases.push(data);
-        this.filteredPurchases = [...this.purchases];
+       
         this.snackBar.open('Purchase added successfully!', 'Close', { duration: 2000 });
         this.isLoading = false;
       })
@@ -854,11 +853,11 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       })
       .then(data => {
         // Update the purchase in both arrays
-        const index = this.purchases.findIndex(p => p.id === data.id);
-        if (index !== -1) {
-          this.purchases[index] = data;
-          this.filteredPurchases = [...this.purchases];
-        }
+        // const index = this.purchases.findIndex(p => p.id === data.id);
+        // if (index !== -1) {
+        //   this.purchases[index] = data;
+        //   this.filteredPurchases = [...this.purchases];
+        // }
         this.snackBar.open('Purchase updated successfully!', 'Close', { duration: 2000 });
         this.isLoading = false;
       })
