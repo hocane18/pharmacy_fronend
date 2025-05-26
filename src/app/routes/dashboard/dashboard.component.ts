@@ -21,6 +21,10 @@ import { MtxProgressModule } from '@ng-matero/extensions/progress';
 import { Subscription } from 'rxjs';
 import { DashboardService } from './dashboard.service';
 import { NgApexchartsModule } from 'ng-apexcharts';
+import { environment } from '@env/environment';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { CommonModule } from '@angular/common';
+import { ChangeDetectorRef } from '@angular/core';
 
 export interface ChartOptions {
   series: ApexAxisChartSeries;
@@ -28,6 +32,7 @@ export interface ChartOptions {
   xaxis: ApexXAxis;
   title: ApexTitleSubtitle;
 }
+
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
@@ -46,14 +51,16 @@ export interface ChartOptions {
     MtxProgressModule,
     MtxAlertModule,
     NgApexchartsModule,
+    CommonModule,
   ],
 })
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly ngZone = inject(NgZone);
   private readonly settings = inject(SettingsService);
+  private readonly cdr = inject(ChangeDetectorRef);
   private readonly dashboardSrv = inject(DashboardService);
   public salesmenBarChartOptions: any;
-
+  private readonly snackBar = inject(MatSnackBar);
   constructor() {
     this.salesmenBarChartOptions = {
       series: [
@@ -80,10 +87,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   messages = this.dashboardSrv.getMessages();
 
   charts = this.dashboardSrv.getCharts();
+
   chart1?: ApexCharts;
   chart2?: ApexCharts;
 
-  stats = this.dashboardSrv.getStats();
+  stats: { color: string; title: string; amount: string; [key: string]: any }[] = [];
 
   notifySubscription = Subscription.EMPTY;
 
@@ -116,10 +124,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit() {
     this.notifySubscription = this.settings.notify.subscribe(opts => {
-      console.log(opts);
-
+      this.loadStats();
       this.updateCharts();
     });
+    this.loadsalePurchase();
+    this.loadCategoryWiseSales();
   }
 
   ngAfterViewInit() {
@@ -134,10 +143,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   initCharts() {
-    this.chart1 = new ApexCharts(document.querySelector('#chart1'), this.charts[0]);
-    this.chart1?.render();
-    this.chart2 = new ApexCharts(document.querySelector('#chart2'), this.charts[1]);
-    this.chart2?.render();
+    // this.chart1 = new ApexCharts(document.querySelector('#chart1'), this.charts1);
+    // console.log(this.charts1);
+    // this.chart1?.render();
+    // this.chart2 = new ApexCharts(document.querySelector('#chart2'), this.charts[1]);
+    // this.chart2?.render();
 
     this.updateCharts();
   }
@@ -180,6 +190,76 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onAlertDismiss() {
     this.isShowAlert = false;
+  }
+  loadStats(type = 'monthly') {
+    const apiUrl = `${environment.apiUrl || ''}Dashboard/summary-cards?filter=${type}`;
+    const token = localStorage.getItem('ng-matero-token');
+
+    fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.stats = Array.isArray(data)
+          ? data.map((item: any) => ({
+              color: item.color || '',
+              title: item.title || '',
+              amount: item.amount || '',
+              ...item,
+            }))
+          : [];
+        this.cdr.markForCheck();
+      })
+      .catch(() => {
+        this.snackBar.open('unable to get users!', 'Close', { duration: 2000 });
+      });
+  }
+  loadsalePurchase(type = 'monthly') {
+    const apiUrl = `${environment.apiUrl || ''}Dashboard/sales-purchase-chart?filter=${type}`;
+    const token = localStorage.getItem('ng-matero-token');
+
+    fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.chart1 = new ApexCharts(document.querySelector('#chart1'), data);
+        this.chart1?.render();
+        this.cdr.markForCheck();
+      })
+      .catch(() => {
+        this.snackBar.open('unable to get users!', 'Close', { duration: 2000 });
+      });
+  }
+
+  loadCategoryWiseSales() {
+    const apiUrl = `${environment.apiUrl || ''}Dashboard/monthly-category-sales-donut`;
+    const token = localStorage.getItem('ng-matero-token');
+
+    fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        console.log('Chart data:', data);
+
+        this.chart2 = new ApexCharts(document.querySelector('#chart2'), data);
+        this.chart2?.render();
+
+        this.cdr.markForCheck();
+      })
+      .catch(() => {
+        this.snackBar.open('unable to get users!', 'Close', { duration: 2000 });
+      });
   }
 
   getRandom(min: number, max: number) {

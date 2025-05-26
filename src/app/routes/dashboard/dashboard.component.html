@@ -9,8 +9,8 @@
 
 <div class="row">
   <!-- Statistics -->
-  @for (stat of stats; track stat) {
-    <div class="col-sm-6 col-md-3">
+  <!-- @for (stat of stats; track stat) { -->
+    <div class="col-sm-6 col-md-3" *ngFor="let stat of stats">
       <mat-card [class]="['text-white', 'b-0', stat.color]">
         <mat-card-header>
           <mat-card-subtitle class="text-white">{{ stat.title }}</mat-card-subtitle>
@@ -27,7 +27,7 @@
         </mat-card-content>
       </mat-card>
     </div>
-  }
+  <!-- } -->
 
   <!-- Charts -->
   <div class="col-md-7">

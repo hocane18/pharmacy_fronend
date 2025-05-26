@@ -474,6 +474,7 @@ export class SaleComponent implements OnInit, OnDestroy {
       if (index > -1) {
         this.sales[index] = saleData;
       }
+      this.updateSales(saleData);
     } else {
       const newSale = {
         ...saleData,
@@ -481,7 +482,7 @@ export class SaleComponent implements OnInit, OnDestroy {
       };
       this.addSales(newSale);
       this.loadSales();
-      this.sales.push(newSale);
+      //this.sales.push(newSale);
     }
   }
 
@@ -849,9 +850,9 @@ export class SaleComponent implements OnInit, OnDestroy {
       .then(res => res.json())
       .then(data => {
         this.sales = Array.isArray(data) ? data.map(s => this.mapSaleDtoToSale(s)) : [];
-        console.log('Mapped sales:', this.sales);
+        //console.log('Mapped sales:', this.sales);
         this.filteredSales = [...this.sales];
-        console.log('Loaded purchases:', this.sales);
+        //console.log('Loaded purchases:', this.sales);
         this.isLoading = false;
       })
       .catch(error => {
@@ -873,7 +874,7 @@ export class SaleComponent implements OnInit, OnDestroy {
       UserId: 0,
       TotalAmount: sale.totalAmount,
       InvoiceNo: '',
-      salesDate: sale.saleData,
+      salesDate: sale.purchaseDate,
       salesItems: sale.items.map((item: SaleItem) => ({
         ProductId: item.productId,
         Quantity: item.quantity,
@@ -884,6 +885,49 @@ export class SaleComponent implements OnInit, OnDestroy {
 
     fetch(apiUrl, {
       method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+      body: fordata ? JSON.stringify(fordata) : null,
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.sales.push(data);
+        this.filteredSales = [...this.sales];
+        this.snackBar.open('sales added successfully!', 'Close', { duration: 2000 });
+        this.isLoading = false;
+      })
+      .catch(error => {
+        console.error('Error adding sale:', error);
+        this.snackBar.open('Failed to add sale. Please try again.', 'Close', {
+          duration: 2000,
+        });
+        this.isLoading = false;
+      });
+  }
+  updateSales(sale: any) {
+    this.isLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}sales/${sale.id}`;
+    const token = localStorage.getItem('ng-matero-token');
+
+    // Prepare data to match PurchaseDto structure
+    const fordata = {
+      CustomerId: sale.customerId,
+      UserId: 0,
+      TotalAmount: sale.totalAmount,
+      InvoiceNo: '',
+      salesDate: sale.purchaseDate,
+      salesItems: sale.items.map((item: SaleItem) => ({
+        ProductId: item.productId,
+        Quantity: item.quantity,
+        Price: item.price,
+        Total: item.total,
+      })),
+    };
+
+    fetch(apiUrl, {
+      method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
         'Content-Type': 'application/json',
