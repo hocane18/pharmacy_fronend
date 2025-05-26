@@ -156,7 +156,19 @@
               "Report.View"
             ]
           }
-        }],
+        },
+       {
+          "route": "UserSale",
+          "name": "User Sale",
+          "type": "link",
+          "permissions": {
+            "only": [
+              "Report.View"
+            ]
+          }
+        }
+      ],
+        
           "permissions": {
             "only": [
               "Report.View"

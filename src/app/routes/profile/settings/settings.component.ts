@@ -52,7 +52,7 @@ export class ProfileSettingsComponent implements OnInit {
           name: user.name || '',
           email: user.email || '',
           phone: user.phone || '',
-          role: 'cashier'
+          role: user.role,
         });
       }
     });
@@ -71,7 +71,7 @@ export class ProfileSettingsComponent implements OnInit {
       // Here you would typically call your API to update the user profile
       const formValue = this.reactiveForm.getRawValue();
       console.log('Form submitted:', formValue);
-      
+
       // Show success message
       this.snackBar.open('Profile updated successfully', 'Close', {
         duration: 3000,

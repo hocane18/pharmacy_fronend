@@ -13,7 +13,7 @@
             <input #fileInput type="file" accept="image/*" (change)="onFileSelected($event)" style="display: none" />
           </div>
           <h2 class="m-t-0 m-b-8 f-w-400">{{ user.name }}</h2>
-          <p class="m-t-0 m-b-8">Cashier</p>
+          <p class="m-t-0 m-b-8">{{ user.role }}</p>
         </div>
 
         <mat-divider class="m-t-16 m-b-8" />

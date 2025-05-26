@@ -47,7 +47,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     MatDividerModule,
   ],
 })
-export class salesandPurchaseComponent implements OnInit {
+export class usersaleComponent implements OnInit {
   @ViewChild('purchaseDialog') purchaseDialog: any;
   @ViewChild('purchaseItemDialog') purchaseItemDialog: any;
   @ViewChild('viewPurchaseDialog') viewPurchaseDialog: any;
@@ -79,15 +79,11 @@ export class salesandPurchaseComponent implements OnInit {
   fromDate: Date | null = null;
   toDate: Date | null = null;
   tableColumns: MtxGridColumn[] = [
-    {
-      header: 'Date',
-      field: 'date',
-      sortable: false,
-      formatter: (row: any) => new Date(row.date).toLocaleDateString(),
-    },
-    { header: 'Type', field: 'type', sortable: false },
-    { header: 'Invoice No', field: 'invId', sortable: false },
+    { header: 'User-Id', field: 'userId', sortable: false },
+    { header: 'User Name', field: 'userName', sortable: false },
     { header: 'Total Amount', field: 'totalAmount', type: 'number' },
+    { header: 'Total Sales', field: 'totalSales', type: 'number' },
+
     // {
     //   header: 'Actions',
     //   field: 'actions',
@@ -138,7 +134,7 @@ export class salesandPurchaseComponent implements OnInit {
     const fromDateStr = formatDate(this.fromDate);
     const toDateStr = formatDate(this.toDate);
 
-    const apiUrl = `${environment.apiUrl || ''}Report/searchSaleAndPurchase?from=${fromDateStr}&to=${toDateStr}`;
+    const apiUrl = `${environment.apiUrl || ''}Report/userSalesReport?from=${fromDateStr}&to=${toDateStr}`;
     //const apiUrl = `${environment.apiUrl || ''}Report/searchSaleAndPurchase?fromDate=${this.fromDate ? this.fromDate.toISOString() : ''}&toDate=${this.toDate ? this.toDate.toISOString() : ''}`;
     if (!this.fromDate && !this.toDate) {
       this.snackBar.open(this.translate.instant('report.selectDate'), 'OK', {
