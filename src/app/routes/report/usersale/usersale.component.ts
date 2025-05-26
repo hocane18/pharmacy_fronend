@@ -23,8 +23,8 @@ import { environment } from '@env/environment';
 import { MatSnackBar } from '@angular/material/snack-bar';
 @Component({
   selector: 'app-purchase',
-  templateUrl: './salesandPurchase.component.html',
-  styleUrl: './salesandpurchase.component.scss',
+  templateUrl: './usersale.component.html',
+  styleUrl: './usersale.component.scss',
   standalone: true,
   imports: [
     FormsModule,
