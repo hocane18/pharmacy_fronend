@@ -111,26 +111,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
 
   users = [];
 
-  purchases: any[] = [
-    {
-      id: '1',
-      supplierId: 1,
-      userId: '1',
-      totalAmount: 1500.0,
-      invoiceNo: 'INV-001',
-      purchaseDate: new Date('2024-03-15'),
-      items: [
-        {
-          id: 1,
-          purchaseId: 1,
-          productId: 1,
-          quantity: 10,
-          price: 10.0,
-          total: 100.0,
-        },
-      ],
-    },
-  ];
+  purchases: any[] = [];
 
   itemColumns: MtxGridColumn[] = [
     {
@@ -397,13 +378,13 @@ export class PurchaseComponent implements OnInit, OnDestroy {
         productName: this.getProductName(item.productId),
         quantity: item.quantity,
         price: item.price,
-        total: item.total
-      }))
+        total: item.total,
+      })),
     };
 
     const dialogRef = this.dialog.open(this.purchaseDialog, {
       width: '800px',
-      data: this.purchaseForm
+      data: this.purchaseForm,
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -417,7 +398,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
         totalAmount: 0,
         invoiceNo: '',
         purchaseDate: new Date(),
-        items: []
+        items: [],
       };
     });
   }
@@ -456,12 +437,15 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       if (index > -1) {
         this.purchases[index] = purchaseData;
       }
+      this.editPurchase(this.purchases[index]);
+      this.loadPurchase();
     } else {
       const newPurchase = {
         ...purchaseData,
         id: (this.purchases.length + 1).toString(),
       };
       this.addPurchase(newPurchase);
+      this.loadPurchase();
       this.purchases.push(newPurchase);
     }
   }
@@ -706,7 +690,14 @@ export class PurchaseComponent implements OnInit, OnDestroy {
     })
       .then(res => res.json())
       .then(data => {
-        this.suppliers = data || [];
+        this.suppliers = (data || []).map((s: any) => ({
+          id: s.id,
+          name: s.name || s.Name,
+          phone: s.phone || s.Phone,
+          address: s.address || s.Address,
+          email: s.email || s.Email,
+          createdAt: s.createdAt || s.CreatedAt,
+        }));
         console.log(this.suppliers);
         this.supplierLoading = false;
       })
@@ -1055,14 +1046,18 @@ export class PurchaseComponent implements OnInit, OnDestroy {
                 </tr>
               </thead>
               <tbody>
-                ${items.map((item: PurchaseItem) => `
+                ${items
+                  .map(
+                    (item: PurchaseItem) => `
                   <tr>
                     <td>${this.getProductName(item.productId)}</td>
                     <td>${item.quantity}</td>
                     <td>$${item.price.toFixed(2)}</td>
                     <td>$${item.total.toFixed(2)}</td>
                   </tr>
-                `).join('')}
+                `
+                  )
+                  .join('')}
               </tbody>
             </table>
           </div>

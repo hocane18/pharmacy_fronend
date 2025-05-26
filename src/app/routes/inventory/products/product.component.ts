@@ -358,7 +358,11 @@ export class ProductComponent implements OnInit, OnDestroy {
     })
       .then(response => response.json())
       .then(data => {
-        this.products = data;
+        // Map API data to match table columns if needed
+        this.products = (data || []).map((item: any) => ({
+          ...item,
+          imageUrl: item.imageUrl || '', // Ensure imageUrl is set for table display
+        }));
         this.isLoading = false;
       })
       .catch(error => {

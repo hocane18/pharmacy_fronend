@@ -60,7 +60,7 @@ export class LoginService {
             name: response.name ?? '',
             email: response.email ?? '',
             role: response.role ?? '',
-            avatar: response.avatar ?? 'images/avatar.jpg',
+            avatar: response.avatar ?? '',
             permissions: response.permissions ?? [],
             ...response,
           };

@@ -58,10 +58,10 @@ export class SaleComponent implements OnInit, OnDestroy {
   private readonly _destroy$ = new Subject<void>();
   private readonly dialog = inject(MatDialog);
   private readonly translate = inject(TranslateService);
-   private readonly snackBar = inject(MatSnackBar);
+  private readonly snackBar = inject(MatSnackBar);
 
   dialogData: any = {
-    sale: null
+    sale: null,
   };
 
   isEditMode = false;
@@ -90,7 +90,6 @@ export class SaleComponent implements OnInit, OnDestroy {
     total: 0,
   };
 
-
   products: {
     id: number;
     name: string;
@@ -115,7 +114,7 @@ export class SaleComponent implements OnInit, OnDestroy {
       phone: '123-456-7890',
       address: '123 Main St',
       email: 'customerA@example.com',
-      createdAt: new Date('2024-01-01')
+      createdAt: new Date('2024-01-01'),
     },
     {
       id: 2,
@@ -123,7 +122,7 @@ export class SaleComponent implements OnInit, OnDestroy {
       phone: '234-567-8901',
       address: '456 Oak St',
       email: 'customerB@example.com',
-      createdAt: new Date('2024-01-02')
+      createdAt: new Date('2024-01-02'),
     },
     {
       id: 3,
@@ -131,8 +130,8 @@ export class SaleComponent implements OnInit, OnDestroy {
       phone: '345-678-9012',
       address: '789 Pine St',
       email: 'customerC@example.com',
-      createdAt: new Date('2024-01-03')
-    }
+      createdAt: new Date('2024-01-03'),
+    },
   ];
 
   users = [
@@ -146,7 +145,7 @@ export class SaleComponent implements OnInit, OnDestroy {
       id: 1,
       customerId: 1,
       userId: 1,
-      totalAmount: 1500.00,
+      totalAmount: 1500.0,
       invoiceNo: 'INV-001',
       purchaseDate: new Date('2024-03-15'),
       items: [
@@ -155,8 +154,8 @@ export class SaleComponent implements OnInit, OnDestroy {
           saleId: 1,
           productId: 1,
           quantity: 10,
-          price: 10.00,
-          total: 100.00,
+          price: 10.0,
+          total: 100.0,
         },
       ],
     },
@@ -245,7 +244,8 @@ export class SaleComponent implements OnInit, OnDestroy {
       header: 'Purchase Date',
       field: 'purchaseDate',
       width: '120px',
-      formatter: (row: any) => row.purchaseDate ? new Date(row.purchaseDate).toLocaleDateString() : '',
+      formatter: (row: any) =>
+        row.purchaseDate ? new Date(row.purchaseDate).toLocaleDateString() : '',
     },
     {
       header: 'Operation',
@@ -313,7 +313,7 @@ export class SaleComponent implements OnInit, OnDestroy {
       header: 'Created At',
       field: 'createdAt',
       width: '120px',
-      formatter: (row: any) => row.createdAt ? new Date(row.createdAt).toLocaleDateString() : '',
+      formatter: (row: any) => (row.createdAt ? new Date(row.createdAt).toLocaleDateString() : ''),
     },
     {
       header: 'Operation',
@@ -342,7 +342,7 @@ export class SaleComponent implements OnInit, OnDestroy {
       ],
     },
   ];
- customerLoading = false;
+  customerLoading = false;
   isLoading = false;
   multiSelectable = false;
   rowSelectable = false;
@@ -363,17 +363,12 @@ export class SaleComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.filteredSales = [...this.sales];
-    this.loadProducts();  
-     this.loadCustomer();
-     this.loadSales();
-    this.searchSubject
-      .pipe(
-        debounceTime(300),
-        distinctUntilChanged()
-      )
-      .subscribe(searchText => {
-        this.filterSales(searchText);
-      });
+    this.loadProducts();
+    this.loadCustomer();
+    this.loadSales();
+    this.searchSubject.pipe(debounceTime(300), distinctUntilChanged()).subscribe(searchText => {
+      this.filterSales(searchText);
+    });
 
     // Initialize with some sample data if empty
     if (this.sales.length === 0) {
@@ -382,7 +377,7 @@ export class SaleComponent implements OnInit, OnDestroy {
           id: 1,
           customerId: 1,
           userId: 1,
-          totalAmount: 1500.00,
+          totalAmount: 1500.0,
           invoiceNo: 'INV-001',
           purchaseDate: new Date('2024-03-15'),
           items: [
@@ -391,8 +386,8 @@ export class SaleComponent implements OnInit, OnDestroy {
               saleId: 1,
               productId: 1,
               quantity: 10,
-              price: 10.00,
-              total: 100.00,
+              price: 10.0,
+              total: 100.0,
             },
           ],
         },
@@ -449,9 +444,9 @@ export class SaleComponent implements OnInit, OnDestroy {
 
   edit(sale: Sale): void {
     this.isEditMode = true;
-    this.saleForm = { 
+    this.saleForm = {
       ...sale,
-      items: sale.items || []
+      items: sale.items || [],
     };
 
     const dialogRef = this.dialog.open(this.saleDialog, {
@@ -518,10 +513,8 @@ export class SaleComponent implements OnInit, OnDestroy {
   }
 
   updateSaleTotal(): void {
-    this.saleForm.totalAmount = this.saleForm.items?.reduce(
-      (sum: number, item: SaleItem) => sum + item.total,
-      0
-    ) || 0;
+    this.saleForm.totalAmount =
+      this.saleForm.items?.reduce((sum: number, item: SaleItem) => sum + item.total, 0) || 0;
   }
 
   openAddItemDialog(): void {
@@ -559,7 +552,7 @@ export class SaleComponent implements OnInit, OnDestroy {
         if (index !== undefined && index > -1) {
           result.total = this.calculateItemTotal(result);
           this.saleForm.items![index] = result;
-            this.saleForm.items = [...this.saleForm.items];
+          this.saleForm.items = [...this.saleForm.items];
           this.updateSaleTotal();
         }
       }
@@ -643,6 +636,7 @@ export class SaleComponent implements OnInit, OnDestroy {
       if (index > -1) {
         this.customers[index] = customerData;
       }
+      this.updateCustomer(customerData);
     } else {
       const newCustomer = {
         ...customerData,
@@ -657,7 +651,7 @@ export class SaleComponent implements OnInit, OnDestroy {
       };
       this.addCustomer(newSyCustomer);
       this.loadCustomer();
-      this.customers.push(newCustomer);
+      //  this.customers.push(newCustomer);
     }
   }
 
@@ -688,14 +682,14 @@ export class SaleComponent implements OnInit, OnDestroy {
       createdAt: new Date(),
     };
     const newSyCustomer = {
-        name: newCustomer.name,
-        phone: newCustomer.phone,
-        address: newCustomer.address,
-        email: newCustomer.email,
-      };
-      this.addCustomer(newSyCustomer);
-      this.loadCustomer();
-    this.customers.push(newCustomer);
+      name: newCustomer.name,
+      phone: newCustomer.phone,
+      address: newCustomer.address,
+      email: newCustomer.email,
+    };
+    this.addCustomer(newSyCustomer);
+    this.loadCustomer();
+    // this.customers.push(newCustomer);
     this.saleForm.customerId = newCustomer.id;
     this.dialog.closeAll();
   }
@@ -726,7 +720,7 @@ export class SaleComponent implements OnInit, OnDestroy {
         this.isLoading = false;
       });
   }
-   loadCustomer() {
+  loadCustomer() {
     this.customerLoading = true;
     const apiUrl = `${environment.apiUrl || ''}customer/All`;
     const token = localStorage.getItem('ng-matero-token');
@@ -739,8 +733,15 @@ export class SaleComponent implements OnInit, OnDestroy {
     })
       .then(res => res.json())
       .then(data => {
-        this.customers = data || [];
-        console.log(this.customers);
+        //this.customers = data || [];
+        this.customers = (data || []).map((s: any) => ({
+          id: s.id,
+          name: s.name,
+          phone: s.phone,
+          address: s.address,
+          email: s.email,
+          createdAt: s.createdAt,
+        }));
         this.customerLoading = false;
       })
       .catch(() => {
@@ -770,124 +771,157 @@ export class SaleComponent implements OnInit, OnDestroy {
       .then(res => res.json())
       .then(data => {
         this.customers.push(data);
-        this.snackBar.open('Supplier added successfully!', 'Close', { duration: 2000 });
+        this.snackBar.open('Customer added successfully!', 'Close', { duration: 2000 });
 
         this.customerLoading = false;
       })
       .catch(() => {
-        this.snackBar.open('Failed to add supplier. Please try again.', 'Close', {
+        this.snackBar.open('Failed to add Customer. Please try again.', 'Close', {
           duration: 2000,
         });
         this.customerLoading = false;
       });
   }
-private mapSaleDtoToSale(dto: any): Sale {
-  return {
-    id: dto.id,
-    customerId: dto.customerId,
-    userId: dto.userId,
-    totalAmount: dto.totalAmount,
-    invoiceNo: dto.invoiceNo,
-    purchaseDate: new Date(dto.purchaseDate),
-    items: (dto.items || []).map((item: any) => ({
-      id: item.id,
-      saleId:  dto.id,
-      productId: item.productId,
-      quantity: item.quantity,
-      price: item.price,
-      total: item.total
-    }))
-  };
-}
+  updateCustomer(supplier: any) {
+    this.customerLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}Customer/update/${supplier.id}`;
+    const token = localStorage.getItem('ng-matero-token');
 
+    // Prepare data to match SupplierDto structure
+    const fordata = {
+      Name: supplier.name,
+      Phone: supplier.phone,
+      Address: supplier.address,
+      Email: supplier.email,
+    };
+    fetch(apiUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+      body: fordata ? JSON.stringify(fordata) : null,
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.customers.push(data);
+        this.snackBar.open('Customer updated successfully!', 'Close', { duration: 2000 });
 
-  loadSales() {
-      this.isLoading = true;
-      const apiUrl = `${environment.apiUrl || ''}sales`;
-      const token = localStorage.getItem('ng-matero-token');
-  
-      fetch(apiUrl, {
-        headers: {
-          'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
-          'Content-Type': 'application/json',
-        },
+        this.customerLoading = false;
       })
-        .then(res => res.json())
-        .then(data => {
-          this.sales = Array.isArray(data) ? data.map(s => this.mapSaleDtoToSale(s)) : [];
-          console.log('Mapped sales:', this.sales);
-          this.filteredSales = [...this.sales];
-          console.log('Loaded purchases:', this.sales);
-          this.isLoading = false;
-        })
-        .catch(error => {
-          console.error('Error loading purchases:', error);
-          this.sales = [];
-          this.filteredSales = [];
-          this.isLoading = false;
+      .catch(() => {
+        this.snackBar.open('Failed to UPDATED Customer. Please try again.', 'Close', {
+          duration: 2000,
         });
-    }
-
-      addSales(sale: any) {
-        this.isLoading = true;
-        const apiUrl = `${environment.apiUrl || ''}sales`;
-        const token = localStorage.getItem('ng-matero-token');
-    
-        // Prepare data to match PurchaseDto structure
-        const fordata = {
-          CustomerId: sale.customerId,
-          UserId: 0,
-          TotalAmount: sale.totalAmount,
-          InvoiceNo: '',
-          salesDate: sale.saleData,
-          salesItems: sale.items.map((item: SaleItem) => ({
-            ProductId: item.productId,
-            Quantity: item.quantity,
-            Price: item.price,
-            Total: item.total,
-          })),
-        };
-    
-        fetch(apiUrl, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
-            'Content-Type': 'application/json',
-          },
-          body: fordata ? JSON.stringify(fordata) : null,
-        })
-          .then(res => res.json())
-          .then(data => {
-            this.sales.push(data);
-            this.filteredSales = [...this.sales];
-            this.snackBar.open('sales added successfully!', 'Close', { duration: 2000 });
-            this.isLoading = false;
-          })
-          .catch(error => {
-            console.error('Error adding sale:', error);
-            this.snackBar.open('Failed to add sale. Please try again.', 'Close', {
-              duration: 2000,
-            });
-            this.isLoading = false;
-          });
-      }
-
-     printSale(sale: Sale): void {
-  // Open a new window
-  const printWindow = window.open('', '_blank');
-  if (!printWindow) {
-    this.snackBar.open('Please allow popups for printing', 'Close', { duration: 3000 });
-    return;
+        this.customerLoading = false;
+      });
+  }
+  private mapSaleDtoToSale(dto: any): Sale {
+    return {
+      id: dto.id,
+      customerId: dto.customerId,
+      userId: dto.userId,
+      totalAmount: dto.totalAmount,
+      invoiceNo: dto.invoiceNo,
+      purchaseDate: new Date(dto.purchaseDate),
+      items: (dto.items || []).map((item: any) => ({
+        id: item.id,
+        saleId: dto.id,
+        productId: item.productId,
+        quantity: item.quantity,
+        price: item.price,
+        total: item.total,
+      })),
+    };
   }
 
-  // Get customer and user names
-  const customerName = this.getCustomerName(sale.customerId);
-  const userName = this.getUserName(sale.userId);
-  const saleDate = new Date(sale.purchaseDate).toLocaleDateString();
-  const items = sale.items || [];
+  loadSales() {
+    this.isLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}sales`;
+    const token = localStorage.getItem('ng-matero-token');
 
-  // Build the HTML content
-  const content = `
+    fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.sales = Array.isArray(data) ? data.map(s => this.mapSaleDtoToSale(s)) : [];
+        console.log('Mapped sales:', this.sales);
+        this.filteredSales = [...this.sales];
+        console.log('Loaded purchases:', this.sales);
+        this.isLoading = false;
+      })
+      .catch(error => {
+        console.error('Error loading purchases:', error);
+        this.sales = [];
+        this.filteredSales = [];
+        this.isLoading = false;
+      });
+  }
+
+  addSales(sale: any) {
+    this.isLoading = true;
+    const apiUrl = `${environment.apiUrl || ''}sales`;
+    const token = localStorage.getItem('ng-matero-token');
+
+    // Prepare data to match PurchaseDto structure
+    const fordata = {
+      CustomerId: sale.customerId,
+      UserId: 0,
+      TotalAmount: sale.totalAmount,
+      InvoiceNo: '',
+      salesDate: sale.saleData,
+      salesItems: sale.items.map((item: SaleItem) => ({
+        ProductId: item.productId,
+        Quantity: item.quantity,
+        Price: item.price,
+        Total: item.total,
+      })),
+    };
+
+    fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+      body: fordata ? JSON.stringify(fordata) : null,
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.sales.push(data);
+        this.filteredSales = [...this.sales];
+        this.snackBar.open('sales added successfully!', 'Close', { duration: 2000 });
+        this.isLoading = false;
+      })
+      .catch(error => {
+        console.error('Error adding sale:', error);
+        this.snackBar.open('Failed to add sale. Please try again.', 'Close', {
+          duration: 2000,
+        });
+        this.isLoading = false;
+      });
+  }
+
+  printSale(sale: Sale): void {
+    // Open a new window
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      this.snackBar.open('Please allow popups for printing', 'Close', { duration: 3000 });
+      return;
+    }
+
+    // Get customer and user names
+    const customerName = this.getCustomerName(sale.customerId);
+    const userName = this.getUserName(sale.userId);
+    const saleDate = new Date(sale.purchaseDate).toLocaleDateString();
+    const items = sale.items || [];
+
+    // Build the HTML content
+    const content = `
     <!DOCTYPE html>
     <html>
       <head>
@@ -950,14 +984,18 @@ private mapSaleDtoToSale(dto: any): Sale {
               </tr>
             </thead>
             <tbody>
-              ${items.map((item: SaleItem) => `
+              ${items
+                .map(
+                  (item: SaleItem) => `
                 <tr>
                   <td>${this.getProductName(item.productId)}</td>
                   <td>${item.quantity}</td>
                   <td>$${item.price.toFixed(2)}</td>
                   <td>$${item.total.toFixed(2)}</td>
                 </tr>
-              `).join('')}
+              `
+                )
+                .join('')}
             </tbody>
           </table>
         </div>
@@ -973,9 +1011,8 @@ private mapSaleDtoToSale(dto: any): Sale {
     </html>
   `;
 
-  // Write the content to the new window
-  printWindow.document.write(content);
-  printWindow.document.close();
+    // Write the content to the new window
+    printWindow.document.write(content);
+    printWindow.document.close();
+  }
 }
-
-} 

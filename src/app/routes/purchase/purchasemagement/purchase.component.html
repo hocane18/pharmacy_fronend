@@ -36,8 +36,7 @@
       [loading]="supplierLoading"
       [showToolbar]="true"
       [pageSize]="5"
-      [pageSizeOptions]="[5, 10, 25, 50]">
-    </mtx-grid>
+      [pageSizeOptions]="[5, 10, 25, 50]" />
   </mat-card-content>
 </mat-card>
 
@@ -132,7 +131,7 @@
           <mat-option *ngFor="let supplier of suppliers" [value]="supplier.id">
             {{ supplier.name }}
           </mat-option>
-          <mat-divider></mat-divider>
+          <mat-divider />
           <mat-option (click)="openQuickAddSupplierDialog()" class="add-option">
             <mat-icon>add</mat-icon>
             Add New Supplier
@@ -142,14 +141,14 @@
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Invoice No</mat-label>
-        <input matInput [(ngModel)]="purchaseForm.invoiceNo" [readonly]="true">
+        <input matInput [(ngModel)]="purchaseForm.invoiceNo" [readonly]="true" disabled>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Purchase Date</mat-label>
         <input matInput [matDatepicker]="picker" [(ngModel)]="purchaseForm.purchaseDate">
-        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-        <mat-datepicker #picker></mat-datepicker>
+        <mat-datepicker-toggle matSuffix [for]="picker" />
+        <mat-datepicker #picker />
       </mat-form-field>
 
       <div class="purchase-items-section">
