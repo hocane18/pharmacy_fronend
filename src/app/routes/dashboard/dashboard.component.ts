@@ -81,8 +81,46 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       },
     };
   }
-  displayedColumns: string[] = ['position', 'name', 'weight', 'symbol'];
-  dataSource = this.dashboardSrv.getData();
+  displayedColumns: string[] = ['id', 'name', 'quantity', 'category'];
+  dataSource: { id: number; name: string; quantity: number; category: string; unit: string }[] = [];
+  displayedPuchaseColumns: string[] = [
+    'id',
+    'invoiceNumber',
+    'totalAmount',
+    'supplier',
+    'user',
+    'itemsCount',
+    'purchaseDate',
+  ];
+
+  todayPurchase: {
+    id: number;
+    invoiceNumber: string;
+    totalAmount: number;
+    purchaseDate: string;
+    supplier: string;
+    user: string;
+    itemsCount: number;
+  }[] = [];
+  displayedSalesColumns: string[] = [
+    'id',
+    'invoiceNumber',
+    'totalAmount',
+    'customer',
+    'user',
+    'itemsCount',
+    'salesDate',
+  ];
+
+  todaySales: {
+    id: number;
+    invoiceNumber: string;
+    totalAmount: number;
+    salesDate: string;
+    customer: string;
+    user: string;
+    itemsCount: number;
+  }[] = [];
 
   messages = this.dashboardSrv.getMessages();
 
@@ -129,6 +167,10 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     this.loadsalePurchase();
     this.loadCategoryWiseSales();
+    this.loadSaleByUser();
+    this.loadLowStockProducts();
+    this.loadTodayPurchase();
+    this.loadTodaySales();
   }
 
   ngAfterViewInit() {
@@ -261,7 +303,108 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         this.snackBar.open('unable to get users!', 'Close', { duration: 2000 });
       });
   }
+  loadSaleByUser(type = 'monthly') {
+    const apiUrl = `${environment.apiUrl || ''}Dashboard/monthly-sales-by-salesmen?filter=${type}`;
+    const token = localStorage.getItem('ng-matero-token');
 
+    fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.salesmenBarChartOptions = data;
+
+        this.cdr.markForCheck();
+      })
+      .catch(() => {
+        this.snackBar.open('unable to get users!', 'Close', { duration: 2000 });
+      });
+  }
+
+  loadLowStockProducts() {
+    const apiUrl = `${environment.apiUrl || ''}Dashboard/low-stock-products`;
+    const token = localStorage.getItem('ng-matero-token');
+    fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        // Map the API data to match the displayedColumns structure
+        this.dataSource = data;
+        this.dataSource = this.dataSource.map((item: any) => ({
+          id: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          category: item.category,
+          unit: item.unit,
+        }));
+      })
+      .catch(() => {
+        this.snackBar.open('unable to get users!', 'Close', { duration: 2000 });
+      });
+  }
+  loadTodayPurchase() {
+    const apiUrl = `${environment.apiUrl || ''}Dashboard/today-purchase`;
+    const token = localStorage.getItem('ng-matero-token');
+    fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.todayPurchase = data;
+        // Assuming the API returns an array of purchase objects
+
+        this.todayPurchase = this.todayPurchase.map((item: any) => ({
+          id: item.id,
+          invoiceNumber: item.invoiceNo,
+          supplier: item.supplier,
+          user: item.user,
+          totalAmount: item.totalAmount,
+          itemsCount: item.itemsCount,
+          purchaseDate: item.purchaseDate,
+        }));
+      })
+      .catch(() => {
+        this.snackBar.open('unable to get users!', 'Close', { duration: 2000 });
+      });
+  }
+  loadTodaySales() {
+    const apiUrl = `${environment.apiUrl || ''}Dashboard/today-sales`;
+    const token = localStorage.getItem('ng-matero-token');
+    fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.todaySales = data;
+        // Assuming the API returns an array of purchase objects
+
+        this.todaySales = this.todaySales.map((item: any) => ({
+          id: item.id,
+          invoiceNumber: item.invoiceNo,
+          customer: item.customer,
+          user: item.user,
+          totalAmount: item.totalAmount,
+          itemsCount: item.itemsCount,
+          salesDate: item.salesDate,
+        }));
+      })
+      .catch(() => {
+        this.snackBar.open('unable to get users!', 'Close', { duration: 2000 });
+      });
+  }
   getRandom(min: number, max: number) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
