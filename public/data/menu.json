@@ -145,8 +145,8 @@
       "route": "report",
           "name": "Report magement",
             "type": "sub",
-            "icon": "person",
-             "children": [
+            "icon": "assessment",
+            "children": [
         {
           "route": "SalesAndPurchase",
           "name": "Sales And Purchase",
