@@ -474,6 +474,9 @@ export class SaleComponent implements OnInit, OnDestroy {
       if (index > -1) {
         this.sales[index] = saleData;
       }
+console.log('Updated sale:', saleData);
+console.log( saleData);
+
       this.updateSales(saleData);
     } else {
       const newSale = {
@@ -874,7 +877,9 @@ export class SaleComponent implements OnInit, OnDestroy {
       UserId: 0,
       TotalAmount: sale.totalAmount,
       InvoiceNo: '',
-      salesDate: sale.purchaseDate,
+      SalesDate: sale.purchaseDate instanceof Date
+        ? sale.purchaseDate.toISOString()
+        : new Date(sale.purchaseDate).toISOString(),
       salesItems: sale.items.map((item: SaleItem) => ({
         ProductId: item.productId,
         Quantity: item.quantity,
@@ -909,15 +914,15 @@ export class SaleComponent implements OnInit, OnDestroy {
   updateSales(sale: any) {
     this.isLoading = true;
     const apiUrl = `${environment.apiUrl || ''}sales/${sale.id}`;
-    const token = localStorage.getItem('ng-matero-token');
-
     // Prepare data to match PurchaseDto structure
     const fordata = {
       CustomerId: sale.customerId,
       UserId: 0,
       TotalAmount: sale.totalAmount,
       InvoiceNo: '',
-      salesDate: sale.purchaseDate,
+      salesDate: sale.purchaseDate instanceof Date
+        ? sale.purchaseDate.toISOString()
+        : new Date(sale.purchaseDate).toISOString(),
       salesItems: sale.items.map((item: SaleItem) => ({
         ProductId: item.productId,
         Quantity: item.quantity,
@@ -925,6 +930,8 @@ export class SaleComponent implements OnInit, OnDestroy {
         Total: item.total,
       })),
     };
+      
+    const token = localStorage.getItem('ng-matero-token');
 
     fetch(apiUrl, {
       method: 'PUT',
@@ -936,8 +943,8 @@ export class SaleComponent implements OnInit, OnDestroy {
     })
       .then(res => res.json())
       .then(data => {
-        this.sales.push(data);
-        this.filteredSales = [...this.sales];
+        // this.sales.push(data);
+        // this.filteredSales = [...this.sales];
         this.snackBar.open('sales added successfully!', 'Close', { duration: 2000 });
         this.isLoading = false;
       })

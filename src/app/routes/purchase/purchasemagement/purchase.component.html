@@ -100,7 +100,7 @@
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Quantity</mat-label>
-        <input matInput type="number" [(ngModel)]="purchaseItemForm.quantity" (ngModelChange)="onQuantityChange(purchaseItemForm)" min="1">
+        <input matInput type="number" [(ngModel)]="purchaseItemForm.quantity" disabled (ngModelChange)="onQuantityChange(purchaseItemForm)" min="1">
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">

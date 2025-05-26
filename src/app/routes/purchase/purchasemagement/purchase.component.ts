@@ -169,10 +169,13 @@ export class PurchaseComponent implements OnInit, OnDestroy {
     },
     {
       header: 'Supplier',
-      field: 'supplier', // Use a dummy field, since we use formatter
+      field: 'supplierId',
       sortable: true,
       width: '120px',
-      formatter: (row: any) => this.getSupplierName(row.supplierId),
+      formatter: (row: any) => {
+        const name = this.getSupplierName(row.supplierId);
+        return name && name !== row.supplierId.toString() ? name : '';
+      },
     },
     {
       header: 'User',
