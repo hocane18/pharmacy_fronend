@@ -66,6 +66,10 @@ export const routes: Routes = [
         loadChildren: () => import('./routes/profile/profile.routes').then(m => m.routes),
       },
       {
+        path: 'report',
+        loadChildren: () => import('./routes/report/report.routes').then(m => m.routes),
+      },
+      {
         path: 'permissions',
         loadChildren: () => import('./routes/permissions/permissions.routes').then(m => m.routes),
       },

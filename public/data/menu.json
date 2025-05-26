@@ -140,6 +140,28 @@
               "User:Get","User.Add","User.Edit","User.Delete"
             ]
           }
+    },
+    {
+      "route": "report",
+          "name": "Report magement",
+            "type": "sub",
+            "icon": "person",
+             "children": [
+        {
+          "route": "SalesAndPurchase",
+          "name": "Sales And Purchase",
+          "type": "link",
+          "permissions": {
+            "only": [
+              "Report.View"
+            ]
+          }
+        }],
+          "permissions": {
+            "only": [
+              "Report.View"
+            ]
+          }
     }
     ,
     {
