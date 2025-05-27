@@ -276,18 +276,18 @@ export class PurchaseComponent implements OnInit, OnDestroy {
           tooltip: 'Edit',
           click: record => this.editSupplier(record),
         },
-        {
-          type: 'icon',
-          color: 'warn',
-          icon: 'delete',
-          tooltip: 'Delete',
-          pop: {
-            title: 'Confirm Delete',
-            closeText: 'Cancel',
-            okText: 'Delete',
-          },
-          click: record => this.deleteSupplier(record),
-        },
+        // {
+        //   type: 'icon',
+        //   color: 'warn',
+        //   icon: 'delete',
+        //   tooltip: 'Delete',
+        //   pop: {
+        //     title: 'Confirm Delete',
+        //     closeText: 'Cancel',
+        //     okText: 'Delete',
+        //   },
+        //   click: record => this.deleteSupplier(record),
+        // },
       ],
     },
   ];
