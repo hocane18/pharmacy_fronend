@@ -381,7 +381,9 @@ export class SaleComponent implements OnInit, OnDestroy {
   searchText = '';
   private searchSubject = new Subject<string>();
   filteredSales: Sale[] = [];
-
+  isItemSaleEditMode = false;
+  itemDialogRef: any;
+  saleDialogRef: any;
   ngOnInit() {
     this.filteredSales = [...this.sales];
     this.loadProducts();
@@ -451,12 +453,12 @@ export class SaleComponent implements OnInit, OnDestroy {
       items: [],
     };
 
-    const dialogRef = this.dialog.open(this.saleDialog, {
+    this.saleDialogRef = this.dialog.open(this.saleDialog, {
       width: '600px',
       data: { isEditMode: this.isEditMode, saleForm: this.saleForm },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    this.saleDialogRef.afterClosed().subscribe((result: any) => {
       if (result) {
         this.saveSale(result);
       }
@@ -470,12 +472,12 @@ export class SaleComponent implements OnInit, OnDestroy {
       items: sale.items || [],
     };
 
-    const dialogRef = this.dialog.open(this.saleDialog, {
+    this.saleDialogRef = this.dialog.open(this.saleDialog, {
       width: '600px',
       data: { isEditMode: this.isEditMode, saleForm: this.saleForm },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    this.saleDialogRef.afterClosed().subscribe((result: any) => {
       if (result) {
         this.saveSale(result);
       }
@@ -547,12 +549,12 @@ export class SaleComponent implements OnInit, OnDestroy {
       total: 0,
     };
 
-    const dialogRef = this.dialog.open(this.saleItemDialog, {
+    this.itemDialogRef = this.dialog.open(this.saleItemDialog, {
       width: '500px',
       data: { item: this.saleItemForm },
     });
-
-    dialogRef.afterClosed().subscribe(result => {
+    this.isItemSaleEditMode = false;
+    this.itemDialogRef.afterClosed().subscribe((result: any) => {
       if (result) {
         result.total = this.calculateItemTotal(result);
         this.saleForm.items?.push(result);
@@ -563,12 +565,16 @@ export class SaleComponent implements OnInit, OnDestroy {
   }
 
   editItem(item: SaleItem): void {
-    const dialogRef = this.dialog.open(this.saleItemDialog, {
+    console.log('Editing item:', item);
+    this.isItemSaleEditMode = true;
+    const itemWithId = { ...item, id: item.id ?? item.productId };
+    this.saleItemForm = { ...itemWithId }; // Bind to form for editing
+    this.itemDialogRef = this.dialog.open(this.saleItemDialog, {
       width: '500px',
-      data: { item: { ...item } },
+      data: { item: { ...this.saleItemForm } },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    this.itemDialogRef.afterClosed().subscribe((result: any) => {
       if (result) {
         const index = this.saleForm.items?.findIndex((i: SaleItem) => i.id === result.id);
         if (index !== undefined && index > -1) {
@@ -599,6 +605,15 @@ export class SaleComponent implements OnInit, OnDestroy {
   }
 
   onQuantityChange(item: SaleItem): void {
+    const product = this.products.find(p => p.id === item.productId);
+    if (product && item.quantity > product.quantity) {
+      this.snackBar.open(
+        `Quantity exceeds available stock (${product.quantity}). Please adjust.`,
+        'Close',
+        { duration: 2500 }
+      );
+      item.quantity = 0;
+    }
     item.total = this.calculateItemTotal(item);
   }
 
@@ -1090,5 +1105,104 @@ export class SaleComponent implements OnInit, OnDestroy {
     // Write the content to the new window
     printWindow.document.write(content);
     printWindow.document.close();
+  }
+  validateAndSaveSaleItem() {
+    // Validate required fields
+    if (
+      !this.saleItemForm.productId ||
+      !this.saleItemForm.quantity ||
+      !this.saleItemForm.price ||
+      this.saleItemForm.quantity <= 0 ||
+      this.saleItemForm.price < 0
+    ) {
+      this.snackBar.open('Please fill all fields with valid values.', 'Close', { duration: 2000 });
+      return;
+    }
+    console.log('Editing11 item at index:');
+    // Check available stock
+    const product = this.products.find(p => p.id === this.saleItemForm.productId);
+    if (product && this.saleItemForm.quantity > product.quantity) {
+      this.snackBar.open(
+        `Quantity exceeds available stock (${product.quantity}). Please adjust.`,
+        'Close',
+        { duration: 2500 }
+      );
+      return;
+    }
+
+    // Check for duplicate product in the items list (if not editing)
+    if (!this.isItemSaleEditMode) {
+      const isDuplicate = this.saleForm.items.some(
+        (item: any) =>
+          item.productId === this.saleItemForm.productId &&
+          (!this.isEditMode || item !== this.saleItemForm)
+      );
+      if (isDuplicate) {
+        this.snackBar.open(
+          'This product is already in the sale list. Edit or delete it first.',
+          'Close',
+          { duration: 2500 }
+        );
+        return;
+      }
+    }
+
+    // If editing, update the item; otherwise, add new
+    if (this.isItemSaleEditMode) {
+      console.log('Editing11 item at index:', this.saleItemForm);
+      const idx = this.saleForm.items.findIndex(
+        (item: any) => item.productId === this.saleItemForm.productId
+      );
+      if (idx > -1) {
+        this.saleForm.items[idx] = { ...this.saleItemForm };
+        this.saleForm.items = [...this.saleForm.items]; // <-- Add this line
+      }
+      // this.isItemSaleEditMode = false;
+    } else {
+      this.saleItemForm.total = this.calculateItemTotal(this.saleItemForm);
+      this.saleForm.items?.push(this.saleItemForm);
+      this.saleForm.items = [...this.saleForm.items];
+      //this.updateSaleTotal();
+      //
+      // this.saleItemForm.total = this.calculateItemTotal(this.saleItemForm);
+      //this.saleForm.items.push({ ...this.saleItemForm });
+    }
+
+    // Reset form
+    this.saleItemForm = {
+      productId: 0,
+      quantity: 0,
+      price: 0,
+      total: 0,
+    };
+
+    this.updateSaleTotal();
+    if (this.itemDialogRef) {
+      this.itemDialogRef.close();
+    }
+  }
+  onDialogSave() {
+    if (!this.saleForm.customerId || this.saleForm.customerId === 0) {
+      this.snackBar.open('Please select a customer before saving.', 'Close', { duration: 2000 });
+      return;
+    }
+    if (!this.saleForm.items || this.saleForm.items.length === 0) {
+      this.snackBar.open('Please add at least one sale item before saving.', 'Close', {
+        duration: 2000,
+      });
+      return;
+    }
+
+    this.saveSale(this.saleForm);
+
+    this.saleDialogRef.close(this.saleForm); // Only close if valid!
+  }
+  isSaleItemFormValid(): boolean {
+    return (
+      !!this.saleItemForm.productId &&
+      !!this.saleItemForm.quantity &&
+      this.saleItemForm.quantity > 0 &&
+      this.saleItemForm.price >= 0
+    );
   }
 }
