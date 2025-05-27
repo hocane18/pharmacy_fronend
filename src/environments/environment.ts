@@ -7,6 +7,8 @@ export const environment = {
   baseUrl: '',
   useHash: false,
   apiUrl: 'https://localhost:7006/api/',
+  addressPharmacy:
+    '21-C, Street،, 26th Street, Badar Commercial Area Defence V Defence Housing Authority, Karachi, 75500, Pakistan',
 };
 
 /*

@@ -228,8 +228,8 @@ export class PurchaseComponent implements OnInit, OnDestroy {
     {
       header: 'Operation',
       field: 'operation',
-      minWidth: 140,
-      width: '140px',
+      minWidth: 180,
+      width: '180px',
       pinned: 'right',
       type: 'button',
       buttons: [
@@ -250,6 +250,12 @@ export class PurchaseComponent implements OnInit, OnDestroy {
           icon: 'print',
           tooltip: 'Print PDF',
           click: record => this.printPurchase(record),
+        },
+        {
+          type: 'icon',
+          icon: 'location_on', // Use Material icon name for location
+          tooltip: 'Location map',
+          click: record => this.goToDirections(record.supplierId),
         },
       ],
     },
@@ -700,7 +706,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       .then(data => {
         this.purchases = Array.isArray(data) ? data : [];
         this.filteredPurchases = [...this.purchases];
-
+        this.loadProducts();
         this.isLoading = false;
       })
       .catch(error => {
@@ -1188,5 +1194,17 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       this.purchaseItemForm.quantity > 0 &&
       this.purchaseItemForm.price >= 0
     );
+  }
+  goToDirections(suppilerId: number) {
+    // Example: environment.mapOrigin and environment.mapApiKey
+    const supplier = this.suppliers.find(s => s.id === suppilerId);
+    const destination = environment.addressPharmacy; // e.g., "Karachi"
+    // You can add more params as needed
+
+    // Construct the URL (Google Maps Directions as example)
+    const url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(supplier ? supplier.address : '')}&destination=${encodeURIComponent(destination)}`;
+    console.log(url);
+    // Open in a new tab
+    window.open(url, '_blank');
   }
 }
