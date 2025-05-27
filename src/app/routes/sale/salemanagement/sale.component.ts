@@ -290,15 +290,9 @@ export class SaleComponent implements OnInit, OnDestroy {
         },
         {
           type: 'icon',
-          color: 'warn',
-          icon: 'delete',
-          tooltip: 'Delete',
-          pop: {
-            title: 'Confirm Delete',
-            closeText: 'Cancel',
-            okText: 'Delete',
-          },
-          click: record => this.delete(record),
+          icon: 'location_on', // Use Material icon name for location
+          tooltip: 'Location map',
+          click: record => this.goToDirections(record.customerId),
         },
       ],
     },
@@ -1204,5 +1198,17 @@ export class SaleComponent implements OnInit, OnDestroy {
       this.saleItemForm.quantity > 0 &&
       this.saleItemForm.price >= 0
     );
+  }
+  goToDirections(customerId: number) {
+    // Example: environment.mapOrigin and environment.mapApiKey
+    const supplier = environment.addressPharmacy;
+    const destination = this.customers.find(s => s.id === customerId); // e.g., "Karachi"
+    // You can add more params as needed
+
+    // Construct the URL (Google Maps Directions as example)
+    const url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(supplier ? supplier : '')}&destination=${encodeURIComponent(destination?.address || '')}&travelmode=driving&dir_action=navigate`;
+    console.log(url);
+    // Open in a new tab
+    window.open(url, '_blank');
   }
 }
