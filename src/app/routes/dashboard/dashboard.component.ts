@@ -77,7 +77,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         categories: ['John', 'Jane', 'Bob', 'Alice', 'Tom'], // Salesmen names
       },
       title: {
-        text: 'Sales by Salesmen',
+        text: '',
       },
     };
   }
@@ -161,16 +161,18 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   // introducingItem = this.introducingItems[this.getRandom(0, 3)];
 
   ngOnInit() {
-    this.notifySubscription = this.settings.notify.subscribe(opts => {
-      this.loadStats();
-      this.updateCharts();
-    });
     this.loadsalePurchase();
     this.loadCategoryWiseSales();
     this.loadSaleByUser();
     this.loadLowStockProducts();
     this.loadTodayPurchase();
     this.loadTodaySales();
+
+    this.notifySubscription = this.settings.notify.subscribe(opts => {
+      this.loadStats();
+
+      this.updateCharts();
+    });
   }
 
   ngAfterViewInit() {
@@ -273,7 +275,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       .then(data => {
         this.chart1 = new ApexCharts(document.querySelector('#chart1'), data);
         this.chart1?.render();
+
         this.cdr.markForCheck();
+        this.updateCharts();
       })
       .catch(() => {
         this.snackBar.open('unable to get users!', 'Close', { duration: 2000 });
@@ -298,6 +302,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         this.chart2?.render();
 
         this.cdr.markForCheck();
+        this.updateCharts();
       })
       .catch(() => {
         this.snackBar.open('unable to get users!', 'Close', { duration: 2000 });
@@ -318,6 +323,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         this.salesmenBarChartOptions = data;
 
         this.cdr.markForCheck();
+        this.updateCharts();
       })
       .catch(() => {
         this.snackBar.open('unable to get users!', 'Close', { duration: 2000 });
