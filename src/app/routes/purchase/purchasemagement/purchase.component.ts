@@ -1179,6 +1179,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       );
       if (idx > -1) {
         this.purchaseForm.items[idx] = { ...this.purchaseItemForm };
+        this.purchaseForm.items = [...this.purchaseForm.items]; // <-- Add this line
       }
       this.isItemPurchaseEditMode = false;
     } else {
