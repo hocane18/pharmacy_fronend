@@ -342,8 +342,8 @@ export class PurchaseComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.filteredPurchases = [...this.purchases];
     this.loadSupplier();
-    this.loadPurchase();
     this.loadProducts();
+    this.loadPurchase();
     // Setup search with debounce
     this.searchSubject.pipe(debounceTime(300), distinctUntilChanged()).subscribe(searchText => {
       this.filterPurchases(searchText);
@@ -704,6 +704,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
     })
       .then(res => res.json())
       .then(data => {
+        this.loadSupplier();
         this.purchases = Array.isArray(data) ? data : [];
         this.filteredPurchases = [...this.purchases];
         this.loadProducts();
