@@ -135,30 +135,30 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   isShowAlert = true;
 
-  introducingItems = [
-    {
-      name: 'Acrodata GUI',
-      description: 'A JSON powered GUI for configurable panels.',
-      link: 'https://github.com/acrodata/gui',
-    },
-    {
-      name: 'Code Editor',
-      description: 'The CodeMirror 6 wrapper for Angular.',
-      link: 'https://github.com/acrodata/code-editor',
-    },
-    {
-      name: 'Watermark',
-      description: 'A watermark component that can prevent deletion.',
-      link: 'https://github.com/acrodata/watermark',
-    },
-    {
-      name: 'RnD Dialog',
-      description: 'Resizable and draggable dialog based on CDK dialog.',
-      link: 'https://github.com/acrodata/rnd-dialog',
-    },
-  ];
+  // introducingItems = [
+  //   {
+  //     name: 'Acrodata GUI',
+  //     description: 'A JSON powered GUI for configurable panels.',
+  //     link: 'https://github.com/acrodata/gui',
+  //   },
+  //   {
+  //     name: 'Code Editor',
+  //     description: 'The CodeMirror 6 wrapper for Angular.',
+  //     link: 'https://github.com/acrodata/code-editor',
+  //   },
+  //   {
+  //     name: 'Watermark',
+  //     description: 'A watermark component that can prevent deletion.',
+  //     link: 'https://github.com/acrodata/watermark',
+  //   },
+  //   {
+  //     name: 'RnD Dialog',
+  //     description: 'Resizable and draggable dialog based on CDK dialog.',
+  //     link: 'https://github.com/acrodata/rnd-dialog',
+  //   },
+  // ];
 
-  introducingItem = this.introducingItems[this.getRandom(0, 3)];
+  // introducingItem = this.introducingItems[this.getRandom(0, 3)];
 
   ngOnInit() {
     this.notifySubscription = this.settings.notify.subscribe(opts => {
@@ -344,6 +344,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           category: item.category,
           unit: item.unit,
         }));
+        this.cdr.markForCheck();
       })
       .catch(() => {
         this.snackBar.open('unable to get users!', 'Close', { duration: 2000 });
@@ -372,12 +373,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           itemsCount: item.itemsCount,
           purchaseDate: item.purchaseDate,
         }));
+        this.cdr.markForCheck();
       })
       .catch(() => {
         this.snackBar.open('unable to get users!', 'Close', { duration: 2000 });
       });
   }
   loadTodaySales() {
+    this.todaySales = [];
     const apiUrl = `${environment.apiUrl || ''}Dashboard/today-sales`;
     const token = localStorage.getItem('ng-matero-token');
     fetch(apiUrl, {
@@ -398,14 +401,15 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           user: item.user,
           totalAmount: item.totalAmount,
           itemsCount: item.itemsCount,
-          salesDate: item.salesDate,
+          salesDate: item.saleDate,
         }));
+        this.cdr.markForCheck();
       })
       .catch(() => {
         this.snackBar.open('unable to get users!', 'Close', { duration: 2000 });
       });
   }
-  getRandom(min: number, max: number) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
+  // getRandom(min: number, max: number) {
+  //   return Math.floor(Math.random() * (max - min + 1)) + min;
+  // }
 }

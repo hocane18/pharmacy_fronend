@@ -183,9 +183,9 @@
               <th mat-header-cell *matHeaderCellDef>Items Count</th>
               <td mat-cell *matCellDef="let element">{{ element.itemsCount }}</td>
             </ng-container>
-            <ng-container matColumnDef="saleDate">
+            <ng-container matColumnDef="salesDate">
               <th mat-header-cell *matHeaderCellDef>Sale Date</th>
-              <td mat-cell *matCellDef="let element">{{ element.saleDate }}</td>
+              <td mat-cell *matCellDef="let element">{{ element.salesDate }}</td>
             </ng-container>
             <tr mat-header-row *matHeaderRowDef="displayedSalesColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedSalesColumns"></tr>
