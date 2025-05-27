@@ -17,7 +17,12 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDividerModule } from '@angular/material/divider';
-
+import {
+  MtxCalendarView,
+  MtxDatetimepickerMode,
+  MtxDatetimepickerModule,
+  MtxDatetimepickerType,
+} from '@ng-matero/extensions/datetimepicker';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { environment } from '@env/environment';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -45,6 +50,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     MatNativeDateModule,
     MatSelectModule,
     MatDividerModule,
+    MtxDatetimepickerModule,
   ],
 })
 export class usersaleComponent implements OnInit {
@@ -57,7 +63,21 @@ export class usersaleComponent implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly translate = inject(TranslateService);
   private readonly snackBar = inject(MatSnackBar);
+  //datetime
+  type: MtxDatetimepickerType = 'date';
+  mode: MtxDatetimepickerMode = 'portrait';
+  startView: MtxCalendarView = 'month';
+  multiYearSelector = false;
+  touchUi = false;
+  twelvehour = false;
 
+  timeInput = true;
+  timeInputAutoFocus = true;
+  customHeader!: any;
+  actionButtons = false;
+  showWeekNumbers = false;
+  datetime = '';
+  ///end dateime
   supplierLoading = false;
   isLoading = false;
   multiSelectable = false;

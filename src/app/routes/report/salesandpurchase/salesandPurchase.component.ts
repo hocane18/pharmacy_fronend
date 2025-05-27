@@ -21,6 +21,12 @@ import { MatDividerModule } from '@angular/material/divider';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { environment } from '@env/environment';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import {
+  MtxCalendarView,
+  MtxDatetimepickerMode,
+  MtxDatetimepickerModule,
+  MtxDatetimepickerType,
+} from '@ng-matero/extensions/datetimepicker';
 @Component({
   selector: 'app-purchase',
   templateUrl: './salesandPurchase.component.html',
@@ -45,6 +51,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     MatNativeDateModule,
     MatSelectModule,
     MatDividerModule,
+    MtxDatetimepickerModule,
   ],
 })
 export class salesandPurchaseComponent implements OnInit {
@@ -72,7 +79,21 @@ export class salesandPurchaseComponent implements OnInit {
   showPaginator = false;
   expandable = false;
   columnResizable = true;
+  //datetime
+  type: MtxDatetimepickerType = 'date';
+  mode: MtxDatetimepickerMode = 'portrait';
+  startView: MtxCalendarView = 'month';
+  multiYearSelector = false;
+  touchUi = false;
+  twelvehour = false;
 
+  timeInput = true;
+  timeInputAutoFocus = true;
+  customHeader!: any;
+  actionButtons = false;
+  showWeekNumbers = false;
+  datetime = '';
+  ///end dateime
   searchText = '';
   private searchSubject = new Subject<string>();
   filteredPurchases: any[] = [];
