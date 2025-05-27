@@ -393,7 +393,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
 
     this.purchaseDialogRef.afterClosed().subscribe((result: any) => {
       if (result) {
-        this.savePurchase(result);
+        // this.savePurchase(result);
       }
     });
   }
@@ -423,7 +423,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
 
     this.purchaseDialogRef.afterClosed().subscribe((result: any) => {
       if (result) {
-        this.savePurchase(result);
+        // this.savePurchase(result);
       }
       this.isEditMode = false;
       this.purchaseForm = {

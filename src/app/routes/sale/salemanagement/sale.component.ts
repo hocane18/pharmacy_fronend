@@ -290,6 +290,12 @@ export class SaleComponent implements OnInit, OnDestroy {
         },
         {
           type: 'icon',
+          icon: 'delete',
+          tooltip: 'Edit',
+          click: record => this.delete(record),
+        },
+        {
+          type: 'icon',
           icon: 'location_on', // Use Material icon name for location
           tooltip: 'Location map',
           click: record => this.goToDirections(record.customerId),
@@ -480,6 +486,7 @@ export class SaleComponent implements OnInit, OnDestroy {
 
   delete(sale: Sale): void {
     const index = this.sales.findIndex(s => s.id === sale.id);
+    console.log('Deleting sale:', sale, 'Index:', index);
     if (index > -1) {
       this.sales.splice(index, 1);
     }
