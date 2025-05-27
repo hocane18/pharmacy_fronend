@@ -1186,6 +1186,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       // Add new item
       this.purchaseItemForm.productName = this.getProductName(this.purchaseItemForm.productId);
       this.purchaseForm.items.push({ ...this.purchaseItemForm });
+      this.purchaseForm.items = [...this.purchaseForm.items];
     }
 
     // Reset form

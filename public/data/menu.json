@@ -2,13 +2,13 @@
   "menu": [
     {
       "route": "dashboard",
-      "name": "dashboard",
+      "name": "Dashboard",
       "type": "link",
       "icon": "dashboard"
     },
     {
       "route": "purchase",
-      "name": "purchase",
+      "name": "Purchase",
       "type": "sub",
       "icon": "add_shopping_cart",
       "children": [
@@ -54,7 +54,7 @@
     },
     {
       "route": "quotation",
-      "name": "quotation",
+      "name": "Quotation",
       "type": "sub",
       "icon": "chat",
       "children": [
@@ -117,7 +117,7 @@
       "children": [
         {
           "route": "role",
-          "name": "role",
+          "name": "Role",
           "type": "link",
           "permissions": {
             "only": [
@@ -127,7 +127,7 @@
         },
         {
           "route": "permissionList",
-          "name": "permission",
+          "name": "Permission",
           "type": "link",
           "permissions": {
             "only": [
@@ -143,13 +143,13 @@
           }
     },{
       "route": "usersmagement",
-          "name": "User magement",
+          "name": "User Magement",
             "type": "sub",
             "icon": "person",
              "children": [
         {
           "route": "user",
-          "name": "user list",
+          "name": "User List",
           "type": "link",
           "permissions": {
             "only": [
@@ -171,7 +171,7 @@
             "children": [
         {
           "route": "SalesAndPurchase",
-          "name": "Sales And Purchase",
+          "name": "Sales & Purchase",
           "type": "link",
           "permissions": {
             "only": [
@@ -200,14 +200,14 @@
     ,
     {
       "route": "profile",
-      "name": "profile",
+      "name": "Profile",
       "type": "sub",
       "icon": "person",
       "children": [
       
         {
           "route": "settings",
-          "name": "settings",
+          "name": "Settings",
           "type": "link"
         }
       ]
