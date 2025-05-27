@@ -22,6 +22,13 @@ import { Supplier } from './supplier.interface';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { environment } from '@env/environment';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MtxSelectModule } from '@ng-matero/extensions/select';
+import {
+  MtxCalendarView,
+  MtxDatetimepickerMode,
+  MtxDatetimepickerModule,
+  MtxDatetimepickerType,
+} from '@ng-matero/extensions/datetimepicker';
 @Component({
   selector: 'app-purchase',
   templateUrl: './purchase.component.html',
@@ -46,6 +53,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     MatNativeDateModule,
     MatSelectModule,
     MatDividerModule,
+    MtxSelectModule,
+    MtxDatetimepickerModule,
   ],
 })
 export class PurchaseComponent implements OnInit, OnDestroy {
@@ -54,11 +63,26 @@ export class PurchaseComponent implements OnInit, OnDestroy {
   @ViewChild('viewPurchaseDialog') viewPurchaseDialog: any;
   @ViewChild('supplierDialog') supplierDialog: any;
   @ViewChild('quickAddSupplierDialog') quickAddSupplierDialog: any;
+
+  //datetime
+  type: MtxDatetimepickerType = 'date';
+  mode: MtxDatetimepickerMode = 'portrait';
+  startView: MtxCalendarView = 'month';
+  multiYearSelector = false;
+  touchUi = false;
+  twelvehour = false;
+
+  timeInput = true;
+  timeInputAutoFocus = true;
+  customHeader!: any;
+  actionButtons = false;
+  showWeekNumbers = false;
+  ///end dateime
   private readonly _destroy$ = new Subject<void>();
   private readonly dialog = inject(MatDialog);
   private readonly translate = inject(TranslateService);
   private readonly snackBar = inject(MatSnackBar);
-
+  itemDialogRef: any;
   dialogData: any = {
     purchase: null,
   };
@@ -66,6 +90,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
   isEditMode = false;
   isSupplierEditMode = false;
   itemtableload = false;
+  isItemPurchaseEditMode = false;
   supplierForm: Supplier = {
     name: '',
     phone: '',
@@ -106,9 +131,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
     createdAt: string;
     imageUrl: string;
   }[] = [];
-
   suppliers: Supplier[] = [];
-
   users = [];
 
   purchases: any[] = [];
@@ -441,14 +464,14 @@ export class PurchaseComponent implements OnInit, OnDestroy {
         this.purchases[index] = purchaseData;
       }
       this.editPurchase(this.purchases[index]);
-      this.loadPurchase();
+      //this.loadPurchase();
     } else {
       const newPurchase = {
         ...purchaseData,
         id: (this.purchases.length + 1).toString(),
       };
       this.addPurchase(newPurchase);
-      this.loadPurchase();
+      //this.loadPurchase();
       //this.purchases.push(newPurchase);
     }
   }
@@ -496,13 +519,13 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       price: 0,
       total: 0,
     };
-
-    const dialogRef = this.dialog.open(this.purchaseItemDialog, {
+    this.isItemPurchaseEditMode = false;
+    this.itemDialogRef = this.dialog.open(this.purchaseItemDialog, {
       width: '500px',
       data: { item: this.purchaseItemForm },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    this.itemDialogRef.afterClosed().subscribe((result: PurchaseItem | undefined) => {
       if (result) {
         this.itemtableload = true;
         result.total = this.calculateItemTotal(result);
@@ -510,7 +533,6 @@ export class PurchaseComponent implements OnInit, OnDestroy {
         result.productName = product ? product.name : '';
         this.purchaseForm.items.push(result);
         this.purchaseForm.items = [...this.purchaseForm.items];
-        console.log(this.purchaseForm.items);
         this.updatePurchaseTotal();
         this.itemtableload = false;
       }
@@ -518,14 +540,22 @@ export class PurchaseComponent implements OnInit, OnDestroy {
   }
 
   editItem(item: PurchaseItem): void {
-    const dialogRef = this.dialog.open(this.purchaseItemDialog, {
+    this.isItemPurchaseEditMode = true;
+    // Ensure the item has an 'id' property for correct binding and lookup
+    const itemWithId = { ...item, id: item.id ?? item.productId };
+    this.purchaseItemForm = { ...itemWithId }; // Bind to form for editing
+    this.itemDialogRef = this.dialog.open(this.purchaseItemDialog, {
       width: '500px',
-      data: { item: { ...item } },
+      data: { item: { ...itemWithId } },
     });
+    console.log(itemWithId);
 
-    dialogRef.afterClosed().subscribe(result => {
+    this.itemDialogRef.afterClosed().subscribe((result: PurchaseItem | undefined) => {
       if (result) {
-        const index = this.purchaseForm.items.findIndex((i: PurchaseItem) => i.id === result.id);
+        // Use productId for lookup if id is missing
+        const index = this.purchaseForm.items.findIndex(
+          (i: PurchaseItem) => (i.id ?? i.productId) === (result.id ?? result.productId)
+        );
         if (index > -1) {
           result.total = this.calculateItemTotal(result);
           this.purchaseForm.items[index] = result;
@@ -546,9 +576,10 @@ export class PurchaseComponent implements OnInit, OnDestroy {
   }
 
   onProductChange(item: PurchaseItem): void {
+    console.log(item);
     const product = this.products.find(p => p.id === item.productId);
     if (product) {
-      item.price = product.salePrice;
+      item.price = product.costPrice;
       item.total = this.calculateItemTotal(item);
     }
   }
@@ -808,6 +839,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       .then(res => res.json())
       .then(data => {
         this.snackBar.open('Purchase added successfully!', 'Close', { duration: 2000 });
+        this.loadPurchase();
         this.isLoading = false;
       })
       .catch(error => {
@@ -815,6 +847,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
         this.snackBar.open('Failed to add purchase. Please try again.', 'Close', {
           duration: 2000,
         });
+        this.loadPurchase();
         this.isLoading = false;
       });
   }
@@ -862,6 +895,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
         // }
         this.snackBar.open('Purchase updated successfully!', 'Close', { duration: 2000 });
         this.isLoading = false;
+        this.loadPurchase();
       })
       .catch(error => {
         console.error('Error updating purchase:', error);
@@ -869,6 +903,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
           duration: 2000,
         });
         this.isLoading = false;
+        this.loadPurchase();
       });
   }
 
@@ -1082,5 +1117,76 @@ export class PurchaseComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this._destroy$.next();
     this._destroy$.complete();
+  }
+  validateAndSavePurchaseItem() {
+    // Validate required fields
+    if (
+      !this.purchaseItemForm.productId ||
+      !this.purchaseItemForm.quantity ||
+      !this.purchaseItemForm.price ||
+      this.purchaseItemForm.quantity <= 0 ||
+      this.purchaseItemForm.price < 0
+    ) {
+      this.snackBar.open('Please fill all fields with valid values.', 'Close', { duration: 2000 });
+      return;
+    }
+
+    // Check for duplicate product in the items list
+    if (!this.isItemPurchaseEditMode) {
+      const isDuplicate = this.purchaseForm.items.some(
+        (item: any) =>
+          item.productId === this.purchaseItemForm.productId &&
+          (!this.isEditMode || item !== this.purchaseItemForm) // allow editing the same item
+      );
+
+      if (isDuplicate) {
+        this.snackBar.open(
+          'This product is already in the purchase list. Edit or delete it first.',
+          'Close',
+          { duration: 2500 }
+        );
+        return;
+      }
+    }
+
+    // If editing, update the item; otherwise, add new
+    if (this.isItemPurchaseEditMode) {
+      // Find and update the item in the list
+      const idx = this.purchaseForm.items.findIndex(
+        (item: any) => item.productId === this.purchaseItemForm.productId
+      );
+      if (idx > -1) {
+        this.purchaseForm.items[idx] = { ...this.purchaseItemForm };
+      }
+      this.isItemPurchaseEditMode = false;
+    } else {
+      // Add new item
+      this.purchaseItemForm.productName = this.getProductName(this.purchaseItemForm.productId);
+      this.purchaseForm.items.push({ ...this.purchaseItemForm });
+    }
+
+    // Reset form
+    this.purchaseItemForm = {
+      productId: 0,
+      productName: '',
+      quantity: 1,
+      price: 0,
+      total: 0,
+    };
+    this.snackBar.open('Purchase item saved!', 'Close', { duration: 1500 });
+    // Close the dialog
+    this.updatePurchaseTotal();
+    this.itemDialogRef.close();
+    //   if (this.itemDialogRef) {
+    //   this.itemDialogRef.close();
+    // }
+  }
+  isPurchaseItemFormValid(): boolean {
+    return (
+      !!this.purchaseItemForm.productId &&
+      !!this.purchaseItemForm.quantity &&
+      this.purchaseItemForm.quantity > 0 &&
+      this.purchaseItemForm.price >= 0
+    );
   }
 }
