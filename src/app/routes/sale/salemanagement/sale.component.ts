@@ -22,7 +22,13 @@ import { Sale, SaleItem, Customer } from './sale.interface';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { environment } from '@env/environment';
 import { MatSnackBar } from '@angular/material/snack-bar';
-
+import { MtxSelectModule } from '@ng-matero/extensions/select';
+import {
+  MtxCalendarView,
+  MtxDatetimepickerMode,
+  MtxDatetimepickerModule,
+  MtxDatetimepickerType,
+} from '@ng-matero/extensions/datetimepicker';
 @Component({
   selector: 'app-sale',
   templateUrl: './sale.component.html',
@@ -47,6 +53,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     MatNativeDateModule,
     MatSelectModule,
     MatDividerModule,
+    MtxSelectModule,
+    MtxDatetimepickerModule,
   ],
 })
 export class SaleComponent implements OnInit, OnDestroy {
@@ -59,7 +67,20 @@ export class SaleComponent implements OnInit, OnDestroy {
   private readonly dialog = inject(MatDialog);
   private readonly translate = inject(TranslateService);
   private readonly snackBar = inject(MatSnackBar);
+  //datetime
+  type: MtxDatetimepickerType = 'date';
+  mode: MtxDatetimepickerMode = 'portrait';
+  startView: MtxCalendarView = 'month';
+  multiYearSelector = false;
+  touchUi = false;
+  twelvehour = false;
 
+  timeInput = true;
+  timeInputAutoFocus = true;
+  customHeader!: any;
+  actionButtons = false;
+  showWeekNumbers = false;
+  ///end dateime
   dialogData: any = {
     sale: null,
   };
@@ -327,18 +348,18 @@ export class SaleComponent implements OnInit, OnDestroy {
           tooltip: 'Edit',
           click: record => this.editCustomer(record),
         },
-        {
-          type: 'icon',
-          color: 'warn',
-          icon: 'delete',
-          tooltip: 'Delete',
-          pop: {
-            title: 'Confirm Delete',
-            closeText: 'Cancel',
-            okText: 'Delete',
-          },
-          click: record => this.deleteCustomer(record),
-        },
+        // {
+        //   type: 'icon',
+        //   color: 'warn',
+        //   icon: 'delete',
+        //   tooltip: 'Delete',
+        //   pop: {
+        //     title: 'Confirm Delete',
+        //     closeText: 'Cancel',
+        //     okText: 'Delete',
+        //   },
+        //   click: record => this.deleteCustomer(record),
+        // },
       ],
     },
   ];
@@ -474,9 +495,6 @@ export class SaleComponent implements OnInit, OnDestroy {
       if (index > -1) {
         this.sales[index] = saleData;
       }
-console.log('Updated sale:', saleData);
-console.log( saleData);
-
       this.updateSales(saleData);
     } else {
       const newSale = {
@@ -484,7 +502,7 @@ console.log( saleData);
         id: this.sales.length + 1,
       };
       this.addSales(newSale);
-      this.loadSales();
+      //this.loadSales();
       //this.sales.push(newSale);
     }
   }
@@ -654,7 +672,7 @@ console.log( saleData);
         email: newCustomer.email,
       };
       this.addCustomer(newSyCustomer);
-      this.loadCustomer();
+      // this.loadCustomer();
       //  this.customers.push(newCustomer);
     }
   }
@@ -774,10 +792,10 @@ console.log( saleData);
     })
       .then(res => res.json())
       .then(data => {
-        this.customers.push(data);
+        //this.customers.push(data);
         this.snackBar.open('Customer added successfully!', 'Close', { duration: 2000 });
-
         this.customerLoading = false;
+        this.loadCustomer();
       })
       .catch(() => {
         this.snackBar.open('Failed to add Customer. Please try again.', 'Close', {
@@ -808,10 +826,11 @@ console.log( saleData);
     })
       .then(res => res.json())
       .then(data => {
-        this.customers.push(data);
+        //this.customers.push(data);
         this.snackBar.open('Customer updated successfully!', 'Close', { duration: 2000 });
 
         this.customerLoading = false;
+        this.loadCustomer();
       })
       .catch(() => {
         this.snackBar.open('Failed to UPDATED Customer. Please try again.', 'Close', {
@@ -877,9 +896,10 @@ console.log( saleData);
       UserId: 0,
       TotalAmount: sale.totalAmount,
       InvoiceNo: '',
-      SalesDate: sale.purchaseDate instanceof Date
-        ? sale.purchaseDate.toISOString()
-        : new Date(sale.purchaseDate).toISOString(),
+      SalesDate:
+        sale.purchaseDate instanceof Date
+          ? sale.purchaseDate.toISOString()
+          : new Date(sale.purchaseDate).toISOString(),
       salesItems: sale.items.map((item: SaleItem) => ({
         ProductId: item.productId,
         Quantity: item.quantity,
@@ -898,16 +918,18 @@ console.log( saleData);
     })
       .then(res => res.json())
       .then(data => {
-        this.sales.push(data);
-        this.filteredSales = [...this.sales];
+        //this.sales.push(data);
+        //  this.filteredSales = [...this.sales];
         this.snackBar.open('sales added successfully!', 'Close', { duration: 2000 });
         this.isLoading = false;
+        this.loadSales();
       })
       .catch(error => {
         console.error('Error adding sale:', error);
         this.snackBar.open('Failed to add sale. Please try again.', 'Close', {
           duration: 2000,
         });
+        this.loadSales();
         this.isLoading = false;
       });
   }
@@ -920,9 +942,10 @@ console.log( saleData);
       UserId: 0,
       TotalAmount: sale.totalAmount,
       InvoiceNo: '',
-      salesDate: sale.purchaseDate instanceof Date
-        ? sale.purchaseDate.toISOString()
-        : new Date(sale.purchaseDate).toISOString(),
+      salesDate:
+        sale.purchaseDate instanceof Date
+          ? sale.purchaseDate.toISOString()
+          : new Date(sale.purchaseDate).toISOString(),
       salesItems: sale.items.map((item: SaleItem) => ({
         ProductId: item.productId,
         Quantity: item.quantity,
@@ -930,7 +953,7 @@ console.log( saleData);
         Total: item.total,
       })),
     };
-      
+
     const token = localStorage.getItem('ng-matero-token');
 
     fetch(apiUrl, {
@@ -945,14 +968,16 @@ console.log( saleData);
       .then(data => {
         // this.sales.push(data);
         // this.filteredSales = [...this.sales];
-        this.snackBar.open('sales added successfully!', 'Close', { duration: 2000 });
+        this.snackBar.open('sales updated successfully!', 'Close', { duration: 2000 });
         this.isLoading = false;
+        this.loadSales();
       })
       .catch(error => {
         console.error('Error adding sale:', error);
-        this.snackBar.open('Failed to add sale. Please try again.', 'Close', {
+        this.snackBar.open('Failed to updated sale. Please try again.', 'Close', {
           duration: 2000,
         });
+        this.loadSales();
         this.isLoading = false;
       });
   }
