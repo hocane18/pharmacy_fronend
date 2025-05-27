@@ -1,16 +1,17 @@
-.quotation-actions {
-  margin: 1rem 0;
+.sale-actions {
   padding: 0 1rem;
+  margin: 1rem 0;
 
   .actions-container {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-wrap: wrap;
     gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
 
     .search-container {
       flex: 1;
-      max-width: 500px;
+      min-width: 300px;
 
       .search-field {
         width: 100%;
@@ -19,33 +20,37 @@
 
     .button-group {
       display: flex;
-      gap: 0.5rem;
+      gap: 1rem;
     }
   }
 }
 
 .customer-card,
-.quotation-card {
+.sale-card {
   margin: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.quotation-details {
-  padding: 16px;
+.sale-details {
+  padding: 1rem;
 
-  .quotation-info {
+  .sale-info {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
+    gap: 1rem;
 
     p {
+      padding: 0.5rem;
       margin: 0;
+      background-color: #f5f5f5;
+      border-radius: 4px;
     }
   }
 }
 
-.quotation-form,
+.sale-form,
 .customer-form,
-.quotation-item-form {
+.sale-item-form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -56,13 +61,13 @@
   }
 }
 
-.quotation-items-section {
+.sale-items-section {
   margin-top: 1rem;
 
   .section-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     margin-bottom: 1rem;
 
     h3 {
@@ -71,57 +76,98 @@
   }
 
   .total-section {
+    padding: 1rem;
     margin-top: 1rem;
     text-align: right;
+    background-color: #f5f5f5;
+    border-radius: 4px;
 
     h3 {
       margin: 0;
-      color: #1976d2;
+      color: #2196f3;
     }
   }
 }
 
-.view-quotation-details {
-  padding: 16px;
-
-  .quotation-info-section {
-    margin-bottom: 24px;
+.view-sale-details {
+  .sale-info-section {
+    margin-bottom: 2rem;
 
     h3 {
-      margin-bottom: 16px;
+      margin-bottom: 1rem;
+      color: #333;
     }
 
     .info-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
+      gap: 1rem;
 
       .info-item {
+        padding: 0.5rem;
+        background-color: #f5f5f5;
+        border-radius: 4px;
+
         .label {
-          font-weight: bold;
-          margin-right: 8px;
+          margin-right: 0.5rem;
+          font-weight: 500;
+          color: #666;
+        }
+
+        .value {
+          color: #333;
         }
       }
     }
   }
 
-  .quotation-items-section {
+  .sale-items-section {
     h3 {
-      margin-bottom: 16px;
+      margin-bottom: 1rem;
+      color: #333;
     }
   }
 }
 
 .add-option {
   display: flex;
+  gap: 0.5rem;
   align-items: center;
-  gap: 8px;
-  color: #1976d2;
-  cursor: pointer;
+  color: #2196f3;
 
   mat-icon {
-    font-size: 18px;
     width: 18px;
     height: 18px;
+    font-size: 18px;
   }
 }
+
+// Responsive adjustments
+@media (width <= 768px) {
+  .sale-actions {
+    .actions-container {
+      flex-direction: column;
+
+      .search-container {
+        width: 100%;
+      }
+
+      .button-group {
+        justify-content: space-between;
+        width: 100%;
+      }
+    }
+  }
+
+  .sale-details {
+    .sale-info {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .view-sale-details {
+    .info-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+} 

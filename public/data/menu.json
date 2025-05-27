@@ -52,7 +52,29 @@
             ]
           }
     },
-    
+    {
+      "route": "quotation",
+      "name": "quotation",
+      "type": "sub",
+      "icon": "chat",
+      "children": [
+        {
+          "route": "quotationmagement",
+          "name": "Quotation Magement",
+          "type": "link",
+         "permissions": {
+            "only": [
+              "Sale:Get","Sale.Add","Sale.Edit","Sale.Delete"
+            ]
+          }
+        }
+      ],
+      "permissions": {
+            "only": [
+              "Quotation:Get","Quotation.Add","Quotation.Edit","Quotation.Delete"
+            ]
+          }
+    },
     {
       "route": "inventory",
       "name": "Inventory",
