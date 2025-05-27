@@ -487,9 +487,31 @@ export class SaleComponent implements OnInit, OnDestroy {
   delete(sale: Sale): void {
     const index = this.sales.findIndex(s => s.id === sale.id);
     console.log('Deleting sale:', sale, 'Index:', index);
-    if (index > -1) {
-      this.sales.splice(index, 1);
-    }
+    const apiUrl = `${environment.apiUrl || ''}sales/${sale.id}`;
+    const token = localStorage.getItem('ng-matero-token');
+
+    fetch(apiUrl, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(response => {
+        if (response.ok) {
+          this.snackBar.open('Sale deleted successfully!', 'Close', { duration: 2000 });
+          this.loadSales();
+        } else {
+          throw new Error('Failed to delete sale');
+        }
+      })
+      .catch(error => {
+        console.error('Error deleting sale:', error);
+        this.snackBar.open('Failed to delete sale. Please try again.', 'Close', { duration: 2000 });
+      });
+    // if (index > -1) {
+    //   this.sales.splice(index, 1);
+    // }
   }
 
   saveSale(saleData: Sale): void {
