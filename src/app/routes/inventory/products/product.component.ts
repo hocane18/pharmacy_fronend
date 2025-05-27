@@ -91,7 +91,22 @@ export class ProductComponent implements OnInit, OnDestroy {
     { value: 'pack', label: 'Pack' },
   ];
 
-  products: any[] = [
+  products: {
+    alertQuantity: number;
+    barcode: string;
+    brand: string;
+    category: string;
+    categoryId: number;
+    costPrice: number;
+    createdAt: string;
+    expiryDate: string;
+    id: number;
+    imageUrl: string;
+    name: string;
+    quantity: number;
+    salePrice: number;
+    unit: string;
+  }[] = [
     // Add more sample products as needed
   ];
 
@@ -339,7 +354,7 @@ export class ProductComponent implements OnInit, OnDestroy {
         };
       }
       this.editProducts(this.products[index]);
-      this.loadProducts();
+      // this.loadProducts();
     } else {
       const newProduct = {
         ...productData,
@@ -348,8 +363,7 @@ export class ProductComponent implements OnInit, OnDestroy {
         image: this.previewUrl,
       };
       this.saveProducts(newProduct);
-      this.loadProducts();
-      //  this.products.push(newProduct);
+      // this.loadProducts();
     }
   }
 
@@ -378,11 +392,13 @@ export class ProductComponent implements OnInit, OnDestroy {
     })
       .then(response => response.json())
       .then(data => {
+        console.log('Products loaded');
         // Map API data to match table columns if needed
         this.products = (data || []).map((item: any) => ({
           ...item,
           imageUrl: item.imageUrl || '', // Ensure imageUrl is set for table display
         }));
+        // this.products =data || [];
         this.isLoading = false;
       })
       .catch(error => {
@@ -422,7 +438,7 @@ export class ProductComponent implements OnInit, OnDestroy {
       .then(data => {
         this.snackBar.open('Products added successfully!', 'Close', { duration: 2000 });
         this.isLoading = false;
-        console.log('Products saved successfully:', data);
+        this.loadProducts();
       })
       .catch(error => {
         this.isLoading = false;
@@ -460,9 +476,10 @@ export class ProductComponent implements OnInit, OnDestroy {
     })
       .then(response => response.json())
       .then(data => {
-        this.snackBar.open('Products added successfully!', 'Close', { duration: 2000 });
+        this.loadProducts();
+        this.snackBar.open('Products updated successfully!', 'Close', { duration: 2000 });
         this.isLoading = false;
-        console.log('Products saved successfully:', data);
+        console.log('Products updated successfully:', data);
       })
       .catch(error => {
         this.isLoading = false;
