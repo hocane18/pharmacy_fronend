@@ -613,7 +613,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
         this.suppliers[index] = supplierData;
       }
       this.editSuppliers(this.suppliers[index]);
-      this.loadSupplier();
+      //  this.loadSupplier();
     } else {
       const newSupplier = {
         ...supplierData,
@@ -621,8 +621,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
         createdAt: new Date(),
       };
       this.addSupplier(newSupplier);
-      this.loadSupplier();
-      this.suppliers.push(newSupplier);
+      //  this.loadSupplier();
     }
   }
 
@@ -670,7 +669,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       .then(data => {
         this.purchases = Array.isArray(data) ? data : [];
         this.filteredPurchases = [...this.purchases];
-        
+
         this.isLoading = false;
       })
       .catch(error => {
@@ -701,7 +700,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
           email: s.email || s.Email,
           createdAt: s.createdAt || s.CreatedAt,
         }));
-      this.suppliers = [...this.suppliers];
+        this.suppliers = [...this.suppliers];
         this.supplierLoading = false;
       })
       .catch(() => {
@@ -731,7 +730,8 @@ export class PurchaseComponent implements OnInit, OnDestroy {
     })
       .then(res => res.json())
       .then(data => {
-       // this.suppliers.push(data);
+        // this.suppliers.push(data);
+        this.loadSupplier();
         this.snackBar.open('Supplier added successfully!', 'Close', { duration: 2000 });
 
         this.supplierLoading = false;
@@ -765,7 +765,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
     })
       .then(res => res.json())
       .then(data => {
-        this.suppliers.push(data);
+        this.loadSupplier();
         this.snackBar.open('Supplier updated successfully!', 'Close', { duration: 2000 });
 
         this.supplierLoading = false;
@@ -807,7 +807,6 @@ export class PurchaseComponent implements OnInit, OnDestroy {
     })
       .then(res => res.json())
       .then(data => {
-       
         this.snackBar.open('Purchase added successfully!', 'Close', { duration: 2000 });
         this.isLoading = false;
       })
