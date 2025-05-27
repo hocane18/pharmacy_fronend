@@ -5,10 +5,12 @@
     <div class="search-container">
       <mat-form-field appearance="outline" class="search-field">
         <mat-label>Search Sales</mat-label>
-        <input matInput
-               [(ngModel)]="searchText"
-               (ngModelChange)="onSearchChange($event)"
-               placeholder="Search by ID, customer, user, invoice, amount, or date">
+        <input
+          matInput
+          [(ngModel)]="searchText"
+          (ngModelChange)="onSearchChange($event)"
+          placeholder="Search by ID, customer, user, invoice, amount, or date"
+        />
         <mat-icon matSuffix>search</mat-icon>
       </mat-form-field>
     </div>
@@ -36,8 +38,8 @@
       [loading]="customerLoading"
       [showToolbar]="true"
       [pageSize]="5"
-      [pageSizeOptions]="[5, 10, 25, 50]"/>
-   
+      [pageSizeOptions]="[5, 10, 25, 50]"
+    />
   </mat-card-content>
 </mat-card>
 
@@ -74,11 +76,26 @@
     <ng-template #expansionTpl let-row>
       <div class="sale-details">
         <div class="sale-info">
-          <p><strong>Customer:</strong> {{ getCustomerName(row.customerId) }}</p>
-          <p><strong>User:</strong> {{ getUserName(row.userId) }}</p>
-          <p><strong>Total Amount:</strong> ${{ row.totalAmount.toFixed(2) }}</p>
-          <p><strong>Invoice No:</strong> {{ row.invoiceNo }}</p>
-          <p><strong>Purchase Date:</strong> {{ row.purchaseDate | date }}</p>
+          <p>
+            <strong>Customer:</strong>
+            {{ getCustomerName(row.customerId) }}
+          </p>
+          <p>
+            <strong>User:</strong>
+            {{ getUserName(row.userId) }}
+          </p>
+          <p>
+            <strong>Total Amount:</strong>
+            ${{ row.totalAmount.toFixed(2) }}
+          </p>
+          <p>
+            <strong>Invoice No:</strong>
+            {{ row.invoiceNo }}
+          </p>
+          <p>
+            <strong>Purchase Date:</strong>
+            {{ row.purchaseDate | date }}
+          </p>
         </div>
       </div>
     </ng-template>
@@ -92,7 +109,7 @@
     <div class="sale-item-form">
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Product</mat-label>
-         <mtx-select
+        <mtx-select
           [items]="products"
           bindLabel="name"
           bindValue="id"
@@ -109,20 +126,22 @@
               style="max-width: 260px; min-width: 180px; padding: 8px; margin: 0; box-shadow: none"
             >
               <mat-card-header style="padding: 0px 0">
-          <mat-card-title style="font-size: 0.85rem; font-weight: 500">
-            {{ item.name }}
-          </mat-card-title>
-          <mat-card-subtitle style="font-size: 0.85rem">{{ item.category }}</mat-card-subtitle>
+                <mat-card-title style="font-size: 0.85rem; font-weight: 500">
+                  {{ item.name }}
+                </mat-card-title>
+                <mat-card-subtitle style="font-size: 0.85rem">
+                  {{ item.category }}
+                </mat-card-subtitle>
               </mat-card-header>
               <mat-card-content style="padding: 0px 0 0 0">
-          <div style="font-size: 0.85rem">
-            <strong>purchase price:</strong>
-            {{ item.salePrice }}
-          </div>
-          <div style="font-size: 0.85rem">
-            <strong>Current Quantity:</strong>
-            {{ item.quantity }}
-          </div>
+                <div style="font-size: 0.85rem">
+                  <strong>purchase price:</strong>
+                  {{ item.salePrice }}
+                </div>
+                <div style="font-size: 0.85rem">
+                  <strong>Current Quantity:</strong>
+                  {{ item.quantity }}
+                </div>
               </mat-card-content>
             </mat-card>
           </ng-template>
@@ -136,23 +155,43 @@
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Quantity</mat-label>
-        <input matInput type="number" [(ngModel)]="saleItemForm.quantity" (ngModelChange)="onQuantityChange(saleItemForm)" min="1">
+        <input
+          matInput
+          type="number"
+          [(ngModel)]="saleItemForm.quantity"
+          (ngModelChange)="onQuantityChange(saleItemForm)"
+          min="1"
+        />
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Price</mat-label>
-        <input matInput type="number" [(ngModel)]="saleItemForm.price" (ngModelChange)="onQuantityChange(saleItemForm)" min="0" step="0.01">
+        <input
+          matInput
+          type="number"
+          [(ngModel)]="saleItemForm.price"
+          (ngModelChange)="onQuantityChange(saleItemForm)"
+          min="0"
+          step="0.01"
+        />
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Total</mat-label>
-        <input matInput type="number" [(ngModel)]="saleItemForm.total" readonly>
+        <input matInput type="number" [(ngModel)]="saleItemForm.total" readonly />
       </mat-form-field>
     </div>
   </mat-dialog-content>
   <mat-dialog-actions align="end">
     <button mat-button mat-dialog-close>Cancel</button>
-    <button mat-raised-button color="primary" (click)="validateAndSaveSaleItem()" [disabled]="!isSaleItemFormValid()">Save</button>
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="validateAndSaveSaleItem()"
+      [disabled]="!isSaleItemFormValid()"
+    >
+      Save
+    </button>
   </mat-dialog-actions>
 </ng-template>
 
@@ -161,6 +200,10 @@
   <h2 mat-dialog-title>{{ isEditMode ? 'Edit' : 'Add' }} Sale</h2>
   <mat-dialog-content>
     <div class="sale-form">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Invoice No</mat-label>
+        <input matInput [(ngModel)]="saleForm.invoiceNo" disabled />
+      </mat-form-field>
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Customer</mat-label>
         <mtx-select
@@ -209,23 +252,11 @@
         </mat-select> -->
       </mat-form-field>
 
-      <!-- <mat-form-field appearance="outline" class="full-width">
-        <mat-label>User</mat-label>
-        <mat-select [(ngModel)]="saleForm.userId">
-          <mat-option *ngFor="let user of users" [value]="user.id">
-            {{ user.name }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field> -->
-
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Invoice No</mat-label>
-        <input matInput [(ngModel)]="saleForm.invoiceNo" disabled>
-      </mat-form-field>
+    
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Sales Date</mat-label>
-         <mtx-datetimepicker
+        <mtx-datetimepicker
           #Salesdatepicker
           [type]="type"
           [mode]="mode"
@@ -242,7 +273,9 @@
           [(ngModel)]="saleForm.purchaseDate"
           matInput
           required
-          [value]="saleForm.purchaseDate? (saleForm.purchaseDate | date: 'yyyy-MM-ddTHH:mm'): null"
+          [value]="
+            saleForm.purchaseDate ? (saleForm.purchaseDate | date: 'yyyy-MM-ddTHH:mm') : null
+          "
         />
         <mtx-datetimepicker-toggle [for]="Salesdatepicker" matSuffix />
         <!-- <input matInput [matDatepicker]="picker" [(ngModel)]="saleForm.purchaseDate">
@@ -265,7 +298,8 @@
           [loading]="false"
           [showToolbar]="false"
           [pageSize]="5"
-          [pageSizeOptions]="[5, 10, 25, 50]" />
+          [pageSizeOptions]="[5, 10, 25, 50]"
+        />
 
         <div class="total-section">
           <h3>Total Amount: ${{ saleForm.totalAmount.toFixed(2) }}</h3>
@@ -275,7 +309,7 @@
   </mat-dialog-content>
   <mat-dialog-actions align="end">
     <button mat-button mat-dialog-close>Cancel</button>
-    <button mat-raised-button color="primary" (click)="onDialogSave()" >Save</button>
+    <button mat-raised-button color="primary" (click)="onDialogSave()">Save</button>
   </mat-dialog-actions>
 </ng-template>
 
@@ -286,17 +320,17 @@
     <div class="customer-form">
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Name</mat-label>
-        <input matInput [(ngModel)]="customerForm.name" required>
+        <input matInput [(ngModel)]="customerForm.name" required />
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Phone</mat-label>
-        <input matInput [(ngModel)]="customerForm.phone" required>
+        <input matInput [(ngModel)]="customerForm.phone" required />
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Email</mat-label>
-        <input matInput [(ngModel)]="customerForm.email" type="email" required>
+        <input matInput [(ngModel)]="customerForm.email" type="email" required />
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
@@ -354,7 +388,8 @@
           [loading]="false"
           [showToolbar]="false"
           [pageSize]="5"
-          [pageSizeOptions]="[5, 10, 25, 50]" />
+          [pageSizeOptions]="[5, 10, 25, 50]"
+        />
       </div>
     </div>
   </mat-dialog-content>
@@ -370,17 +405,17 @@
     <div class="customer-form">
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Name</mat-label>
-        <input matInput [(ngModel)]="customerForm.name" required>
+        <input matInput [(ngModel)]="customerForm.name" required />
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Phone</mat-label>
-        <input matInput [(ngModel)]="customerForm.phone" required>
+        <input matInput [(ngModel)]="customerForm.phone" required />
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Email</mat-label>
-        <input matInput [(ngModel)]="customerForm.email" type="email" required>
+        <input matInput [(ngModel)]="customerForm.email" type="email" required />
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
@@ -393,4 +428,4 @@
     <button mat-button mat-dialog-close>Cancel</button>
     <button mat-raised-button color="primary" [mat-dialog-close]="customerForm">Save</button>
   </mat-dialog-actions>
-</ng-template> 
+</ng-template>
