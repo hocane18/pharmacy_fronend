@@ -416,12 +416,12 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       })),
     };
 
-    const dialogRef = this.dialog.open(this.purchaseDialog, {
+    this.itemDialogRef = this.dialog.open(this.purchaseDialog, {
       width: '800px',
       data: this.purchaseForm,
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    this.itemDialogRef.afterClosed().subscribe((result: any) => {
       if (result) {
         this.savePurchase(result);
       }
