@@ -24,7 +24,12 @@ import { MatSelectModule } from '@angular/material/select';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { environment } from '@env/environment';
 import { MatSnackBar } from '@angular/material/snack-bar';
-
+import {
+  MtxCalendarView,
+  MtxDatetimepickerMode,
+  MtxDatetimepickerModule,
+  MtxDatetimepickerType,
+} from '@ng-matero/extensions/datetimepicker';
 @Component({
   selector: 'app-product',
   templateUrl: './product.component.html',
@@ -48,6 +53,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     MatDatepickerModule,
     MatNativeDateModule,
     MatSelectModule,
+    MtxDatetimepickerModule,
   ],
 })
 export class ProductComponent implements OnInit, OnDestroy {
@@ -206,7 +212,21 @@ export class ProductComponent implements OnInit, OnDestroy {
       ],
     },
   ];
+  //   //datetime
+  type: MtxDatetimepickerType = 'date';
+  mode: MtxDatetimepickerMode = 'portrait';
+  startView: MtxCalendarView = 'month';
+  multiYearSelector = false;
+  touchUi = false;
+  twelvehour = false;
 
+  timeInput = true;
+  timeInputAutoFocus = true;
+  customHeader!: any;
+  actionButtons = false;
+  showWeekNumbers = false;
+  datetime = '';
+  ///end dateime
   isLoading = false;
   multiSelectable = false;
   rowSelectable = false;
@@ -288,7 +308,7 @@ export class ProductComponent implements OnInit, OnDestroy {
   edit(product: any): void {
     this.isEditMode = true;
     this.productForm = { ...product };
-    this.previewUrl = product.image;
+    this.previewUrl = product.imageUrl;
 
     const dialogRef = this.dialog.open(this.productDialog, {
       width: '600px',
@@ -329,7 +349,7 @@ export class ProductComponent implements OnInit, OnDestroy {
       };
       this.saveProducts(newProduct);
       this.loadProducts();
-    //  this.products.push(newProduct);
+      //  this.products.push(newProduct);
     }
   }
 

@@ -96,7 +96,7 @@
             <div class="form-row">
                 <mat-form-field appearance="outline">
                     <mat-label>Quantity</mat-label>
-                    <input matInput type="number" [(ngModel)]="productForm.quantity" name="quantity" required>
+                    <input matInput type="number" [(ngModel)]="productForm.quantity" name="quantity"  disabled>
                 </mat-form-field>
 
                 <mat-form-field appearance="outline">
@@ -112,9 +112,30 @@
             <div class="form-row">
                 <mat-form-field appearance="outline">
                     <mat-label>Expiry Date</mat-label>
-                    <input matInput [matDatepicker]="picker" [(ngModel)]="productForm.expiryDate" name="expiryDate">
-                    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-                    <mat-datepicker #picker></mat-datepicker>
+                    <mtx-datetimepicker
+                        #expierdatepicker
+                        [type]="type"
+                        [mode]="mode"
+                        [multiYearSelector]="multiYearSelector"
+                        [calendarHeaderComponent]="customHeader"
+                        [startView]="startView"
+                        [touchUi]="touchUi"
+                        [timeInput]="timeInput"
+                        [timeInputAutoFocus]="timeInputAutoFocus"
+                        [showWeekNumbers]="showWeekNumbers"
+                    />
+                    <input
+                        [mtxDatetimepicker]="expierdatepicker"
+                        [(ngModel)]="productForm.expiryDate"
+                        matInput
+                        [ngModelOptions]="{standalone: true}"
+                        [value]="productForm.expiryDate ? (productForm.expiryDate | date:'yyyy-MM-ddTHH:mm') : null"
+                        required
+                    />
+                    <mtx-datetimepicker-toggle [for]="expierdatepicker" matSuffix />
+                    <!-- <input matInput [matDatepicker]="picker" [(ngModel)]="productForm.expiryDate" name="expiryDate">
+                    <mat-datepicker-toggle matSuffix [for]="picker" />
+                    <mat-datepicker #picker /> -->
                 </mat-form-field>
 
                 <mat-form-field appearance="outline">
