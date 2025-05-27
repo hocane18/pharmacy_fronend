@@ -460,7 +460,7 @@ export class SaleComponent implements OnInit, OnDestroy {
 
     this.saleDialogRef.afterClosed().subscribe((result: any) => {
       if (result) {
-        this.saveSale(result);
+        //  this.saveSale(result);
       }
     });
   }
@@ -479,7 +479,7 @@ export class SaleComponent implements OnInit, OnDestroy {
 
     this.saleDialogRef.afterClosed().subscribe((result: any) => {
       if (result) {
-        this.saveSale(result);
+        // this.saveSale(result);
       }
     });
   }
