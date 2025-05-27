@@ -325,7 +325,7 @@
   </mat-dialog-content>
   <mat-dialog-actions align="end">
     <button mat-button mat-dialog-close>Cancel</button>
-    <button mat-raised-button color="primary" [mat-dialog-close]="purchaseForm">Save</button>
+    <button mat-raised-button color="primary" (click)="onDialogSave()"  >Save</button>
   </mat-dialog-actions>
 </ng-template>
 

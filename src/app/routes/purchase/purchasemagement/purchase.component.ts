@@ -83,6 +83,8 @@ export class PurchaseComponent implements OnInit, OnDestroy {
   private readonly translate = inject(TranslateService);
   private readonly snackBar = inject(MatSnackBar);
   itemDialogRef: any;
+  purchaseDialogRef: any;
+  //dialogRef: any;
   dialogData: any = {
     purchase: null,
   };
@@ -384,12 +386,12 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       items: [],
     };
 
-    const dialogRef = this.dialog.open(this.purchaseDialog, {
+    this.purchaseDialogRef = this.dialog.open(this.purchaseDialog, {
       width: '600px',
       data: { isEditMode: this.isEditMode, purchaseForm: this.purchaseForm },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    this.purchaseDialogRef.afterClosed().subscribe((result: any) => {
       if (result) {
         this.savePurchase(result);
       }
@@ -464,6 +466,19 @@ export class PurchaseComponent implements OnInit, OnDestroy {
   }
 
   savePurchase(purchaseData: any): void {
+    if (!purchaseData.supplierId || purchaseData.supplierId === 0) {
+      this.snackBar.open('Please select a supplier before saving.', 'Close', { duration: 2000 });
+      return;
+    }
+
+    // Check if there are any purchase items
+    if (!purchaseData.items || purchaseData.items.length === 0) {
+      this.snackBar.open('Please add at least one purchase item before saving.', 'Close', {
+        duration: 2000,
+      });
+      return;
+    }
+
     if (this.isEditMode) {
       const index = this.purchases.findIndex(p => p.id === purchaseData.id);
       if (index > -1) {
@@ -1180,7 +1195,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       price: 0,
       total: 0,
     };
-    this.snackBar.open('Purchase item saved!', 'Close', { duration: 1500 });
+    //this.snackBar.open('Purchase item saved!', 'Close', { duration: 1500 });
     // Close the dialog
     this.updatePurchaseTotal();
     this.itemDialogRef.close();
@@ -1196,6 +1211,23 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       this.purchaseItemForm.price >= 0
     );
   }
+  onDialogSave() {
+    if (!this.purchaseForm.supplierId || this.purchaseForm.supplierId === 0) {
+      this.snackBar.open('Please select a supplier before saving.', 'Close', { duration: 2000 });
+      return;
+    }
+    if (!this.purchaseForm.items || this.purchaseForm.items.length === 0) {
+      this.snackBar.open('Please add at least one purchase item before saving.', 'Close', {
+        duration: 2000,
+      });
+      return;
+    }
+
+    this.savePurchase(this.purchaseForm);
+
+    this.purchaseDialogRef.close(this.purchaseForm); // Only close if valid!
+  }
+
   goToDirections(suppilerId: number) {
     // Example: environment.mapOrigin and environment.mapApiKey
     const supplier = this.suppliers.find(s => s.id === suppilerId);
