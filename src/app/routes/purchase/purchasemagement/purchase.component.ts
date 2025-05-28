@@ -29,6 +29,7 @@ import {
   MtxDatetimepickerModule,
   MtxDatetimepickerType,
 } from '@ng-matero/extensions/datetimepicker';
+import { ta } from 'date-fns/locale';
 @Component({
   selector: 'app-purchase',
   templateUrl: './purchase.component.html',
@@ -105,6 +106,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
     userId: '',
     totalAmount: 0,
     invoiceNo: '',
+    taxRate: 0,
     purchaseDate: new Date(),
     items: [] as PurchaseItem[],
   };
@@ -214,6 +216,12 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       field: 'totalAmount',
       width: '120px',
       formatter: (row: any) => `$${row.totalAmount.toFixed(2)}`,
+    },
+    {
+      header: 'Tax Rate',
+      field: 'taxRate',
+      width: '120px',
+      formatter: (row: any) => `${row.taxRate.toFixed(2)}%`,
     },
     {
       header: 'Invoice No',
@@ -381,6 +389,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       supplierId: 0,
       userId: '',
       totalAmount: 0,
+      taxRate: environment.taxRate || 0,
       invoiceNo: '',
       purchaseDate: new Date(),
       items: [],
@@ -404,6 +413,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       id: purchase.id,
       supplierId: purchase.supplierId,
       userId: purchase.userId,
+      taxRate: purchase.taxRate || 0,
       totalAmount: purchase.totalAmount,
       invoiceNo: purchase.invoiceNo,
       purchaseDate: new Date(purchase.purchaseDate),
@@ -430,6 +440,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
         supplierId: 0,
         userId: '',
         totalAmount: 0,
+        taxRate: environment.taxRate || 0,
         invoiceNo: '',
         purchaseDate: new Date(),
         items: [],
@@ -526,10 +537,12 @@ export class PurchaseComponent implements OnInit, OnDestroy {
   }
 
   updatePurchaseTotal(): void {
-    this.purchaseForm.totalAmount = this.purchaseForm.items.reduce(
+    const subtotal = this.purchaseForm.items.reduce(
       (sum: number, item: PurchaseItem) => sum + item.total,
       0
     );
+    const taxAmount = subtotal * (this.purchaseForm.taxRate / 100);
+    this.purchaseForm.totalAmount = subtotal + taxAmount;
   }
 
   openAddItemDialog(): void {
@@ -840,6 +853,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       SupplierId: purchase.supplierId,
       UserId: purchase.userId,
       TotalAmount: purchase.totalAmount,
+      TaxRate: purchase.taxRate,
       InvoiceNo: purchase.invoiceNo,
       PurchaseDate: purchase.purchaseDate,
       PurchaseItems: purchase.items.map((item: PurchaseItem) => ({
@@ -885,6 +899,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       UserId: purchase.userId,
       TotalAmount: purchase.totalAmount,
       InvoiceNo: purchase.invoiceNo,
+      taxRate: purchase.taxRate,
       PurchaseDate: purchase.purchaseDate,
       PurchaseItems: purchase.items.map((item: PurchaseItem) => ({
         ProductId: item.productId,
@@ -1121,7 +1136,11 @@ export class PurchaseComponent implements OnInit, OnDestroy {
           </div>
 
           <div class="total-section">
-            <p class="total-amount">Total Amount: $${purchase.totalAmount.toFixed(2)}</p>
+             <p><strong>Subtotal:</strong> $${(purchase.totalAmount / (1 + purchase.taxRate / 100)).toFixed(2)}</p>
+      <p><strong>Tax Rate:</strong> ${purchase.taxRate}%</p>
+      <p><strong>Tax Amount:</strong> $${((purchase.totalAmount * purchase.taxRate) / (100 + purchase.taxRate)).toFixed(2)}</p>
+      <p class="total-amount">Total Amount: $${purchase.totalAmount.toFixed(2)}</p>
+   
           </div>
 
           <div class="no-print">
@@ -1224,6 +1243,7 @@ export class PurchaseComponent implements OnInit, OnDestroy {
       });
       return;
     }
+    this.updatePurchaseTotal();
 
     this.savePurchase(this.purchaseForm);
 
