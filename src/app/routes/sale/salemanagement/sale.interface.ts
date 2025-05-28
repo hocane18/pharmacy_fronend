@@ -6,6 +6,7 @@ export interface Sale {
   invoiceNo: string;
   purchaseDate: Date;
   status?: string;
+  taxRate?: number;
   items: SaleItem[];
 }
 

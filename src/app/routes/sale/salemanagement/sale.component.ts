@@ -101,6 +101,7 @@ export class SaleComponent implements OnInit, OnDestroy {
     totalAmount: 0,
     invoiceNo: '',
     status: 'paid',
+    taxRate: 0,
     purchaseDate: new Date(),
     items: [],
   };
@@ -242,6 +243,12 @@ export class SaleComponent implements OnInit, OnDestroy {
       field: 'totalAmount',
       width: '120px',
       formatter: (row: any) => `$${row.totalAmount.toFixed(2)}`,
+    },
+    {
+      header: 'Tax Rate',
+      field: 'taxRate',
+      width: '120px',
+      formatter: (row: any) => `$${row.taxRate?.toFixed(2)}`,
     },
     {
       header: 'Invoice No',
@@ -441,6 +448,7 @@ export class SaleComponent implements OnInit, OnDestroy {
       customerId: 0,
       userId: 0,
       totalAmount: 0,
+      taxRate: environment.taxRate || 0,
       invoiceNo: '',
       status: 'paid',
       purchaseDate: new Date(),
@@ -554,8 +562,11 @@ export class SaleComponent implements OnInit, OnDestroy {
   }
 
   updateSaleTotal(): void {
-    this.saleForm.totalAmount =
+    const subtotal =
       this.saleForm.items?.reduce((sum: number, item: SaleItem) => sum + item.total, 0) || 0;
+    const taxAmount = subtotal * ((this.saleForm.taxRate ?? 0) / 100);
+
+    this.saleForm.totalAmount = subtotal + taxAmount;
   }
 
   openAddItemDialog(): void {
@@ -878,6 +889,7 @@ export class SaleComponent implements OnInit, OnDestroy {
       userId: dto.userId,
       totalAmount: dto.totalAmount,
       status: dto.status || 'paid',
+      taxRate: dto.taxRate || 0,
       invoiceNo: dto.invoiceNo,
       purchaseDate: new Date(dto.purchaseDate),
       items: (dto.items || []).map((item: any) => ({
@@ -930,6 +942,7 @@ export class SaleComponent implements OnInit, OnDestroy {
       TotalAmount: sale.totalAmount,
       InvoiceNo: '',
       status: sale.status,
+      taxRate: sale.taxRate || environment.taxRate || 0,
       SalesDate:
         sale.purchaseDate instanceof Date
           ? sale.purchaseDate.toISOString()
@@ -977,6 +990,7 @@ export class SaleComponent implements OnInit, OnDestroy {
       TotalAmount: sale.totalAmount,
       InvoiceNo: '',
       status: sale.status,
+      taxRate: sale.taxRate || environment.taxRate || 0,
       salesDate:
         sale.purchaseDate instanceof Date
           ? sale.purchaseDate.toISOString()
@@ -1030,6 +1044,9 @@ export class SaleComponent implements OnInit, OnDestroy {
     const userName = this.getUserName(sale.userId);
     const saleDate = new Date(sale.purchaseDate).toLocaleDateString();
     const items = sale.items || [];
+    // In the printSale method, update the total-section div:
+    const subtotal = items.reduce((sum: number, item: any) => sum + item.total, 0);
+    const taxAmount = subtotal * ((sale.taxRate ?? 0) / 100);
 
     // Build the HTML content
     const content = `
@@ -1113,7 +1130,12 @@ export class SaleComponent implements OnInit, OnDestroy {
         </div>
 
         <div class="total-section">
-          <p class="total-amount">Total Amount: $${sale.totalAmount.toFixed(2)}</p>
+         <p><strong>Subtotal:</strong> $${subtotal.toFixed(2)}</p>
+         <p><strong>Tax Rate:</strong> ${sale.taxRate}%</p>
+         <p><strong>Tax Amount:</strong> $${taxAmount.toFixed(2)}</p>
+         <p class="total-amount">Total Amount: $${sale.totalAmount.toFixed(2)}</p>
+
+         
         </div>
 
         <div class="no-print">
@@ -1213,7 +1235,7 @@ export class SaleComponent implements OnInit, OnDestroy {
       });
       return;
     }
-
+    this.updateSaleTotal();
     this.saveSale(this.saleForm);
 
     this.saleDialogRef.close(this.saleForm); // Only close if valid!

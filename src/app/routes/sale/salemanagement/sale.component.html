@@ -255,7 +255,19 @@
     </ng-container>
   </mat-select>
 </mat-form-field>
-     
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Tax Rate</mat-label>
+      <input
+        matInput
+        type="number"
+        [(ngModel)]="saleForm.taxRate"
+        min="0"
+        (ngModelChange)="updateSaleTotal()"
+        step="0.001"
+        required
+        placeholder="Enter tax rate"s
+      />
+    </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Sales Date</mat-label>
@@ -276,6 +288,7 @@
           [(ngModel)]="saleForm.purchaseDate"
           matInput
           required
+
           [value]="
             saleForm.purchaseDate ? (saleForm.purchaseDate | date: 'yyyy-MM-ddTHH:mm') : null
           "
@@ -305,6 +318,7 @@
         />
 
         <div class="total-section">
+          
           <h3>Total Amount: ${{ saleForm.totalAmount.toFixed(2) }}</h3>
         </div>
       </div>
