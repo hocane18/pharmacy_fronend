@@ -100,6 +100,7 @@ export class SaleComponent implements OnInit, OnDestroy {
     userId: 0,
     totalAmount: 0,
     invoiceNo: '',
+    status: 'paid',
     purchaseDate: new Date(),
     items: [],
   };
@@ -160,27 +161,13 @@ export class SaleComponent implements OnInit, OnDestroy {
     { id: 2, name: 'User B' },
     { id: 3, name: 'User C' },
   ];
-
-  sales: Sale[] = [
-    {
-      id: 1,
-      customerId: 1,
-      userId: 1,
-      totalAmount: 1500.0,
-      invoiceNo: 'INV-001',
-      purchaseDate: new Date('2024-03-15'),
-      items: [
-        {
-          id: 1,
-          saleId: 1,
-          productId: 1,
-          quantity: 10,
-          price: 10.0,
-          total: 100.0,
-        },
-      ],
-    },
+  statues = [
+    { value: 'pending', viewValue: 'Pending' },
+    { value: 'paid', viewValue: 'Paid' },
+    { value: 'return', viewValue: 'Return' },
   ];
+
+  sales: Sale[] = [];
 
   itemColumns: MtxGridColumn[] = [
     {
@@ -267,6 +254,12 @@ export class SaleComponent implements OnInit, OnDestroy {
       width: '120px',
       formatter: (row: any) =>
         row.purchaseDate ? new Date(row.purchaseDate).toLocaleDateString() : '',
+    },
+    {
+      header: 'Status',
+      field: 'status',
+      width: '120px',
+      formatter: (row: any) => (row.status ? row.status : 'paid'),
     },
     {
       header: 'Operation',
@@ -449,6 +442,7 @@ export class SaleComponent implements OnInit, OnDestroy {
       userId: 0,
       totalAmount: 0,
       invoiceNo: '',
+      status: 'paid',
       purchaseDate: new Date(),
       items: [],
     };
@@ -883,6 +877,7 @@ export class SaleComponent implements OnInit, OnDestroy {
       customerId: dto.customerId,
       userId: dto.userId,
       totalAmount: dto.totalAmount,
+      status: dto.status || 'paid',
       invoiceNo: dto.invoiceNo,
       purchaseDate: new Date(dto.purchaseDate),
       items: (dto.items || []).map((item: any) => ({
@@ -934,6 +929,7 @@ export class SaleComponent implements OnInit, OnDestroy {
       UserId: 0,
       TotalAmount: sale.totalAmount,
       InvoiceNo: '',
+      status: sale.status,
       SalesDate:
         sale.purchaseDate instanceof Date
           ? sale.purchaseDate.toISOString()
@@ -980,6 +976,7 @@ export class SaleComponent implements OnInit, OnDestroy {
       UserId: 0,
       TotalAmount: sale.totalAmount,
       InvoiceNo: '',
+      status: sale.status,
       salesDate:
         sale.purchaseDate instanceof Date
           ? sale.purchaseDate.toISOString()
@@ -1076,6 +1073,7 @@ export class SaleComponent implements OnInit, OnDestroy {
           <div class="details-section">
             <h3>Sale Information</h3>
             <p><strong>Invoice No:</strong> ${sale.invoiceNo}</p>
+            <p><strong>Status :</strong> ${sale.status}</p>
             <p><strong>Sale Date:</strong> ${saleDate}</p>
             <p><strong>Total Amount:</strong> $${sale.totalAmount.toFixed(2)}</p>
           </div>

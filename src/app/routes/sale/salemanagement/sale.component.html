@@ -240,19 +240,22 @@
         </mtx-select>
 
         <mat-error>Please choose a Suppiler</mat-error>
-        <!-- <mat-select [(ngModel)]="saleForm.customerId">
-          <mat-option *ngFor="let customer of customers" [value]="customer.id">
-            {{ customer.name }}
-          </mat-option>
-          <mat-divider />
-          <mat-option (click)="openQuickAddCustomerDialog()" class="add-option">
-            <mat-icon>add</mat-icon>
-            Add New Customer
-          </mat-option>
-        </mat-select> -->
+       
       </mat-form-field>
-
-    
+      <mat-form-field appearance="outline" class="full-width">
+  <mat-label>Status</mat-label>
+  <mat-select [(ngModel)]="saleForm.status" required>
+    <ng-container *ngFor="let status of statues">
+      <mat-option
+        [value]="status.value"
+        *ngIf="isEditMode || status.value !== 'return'"
+      >
+        {{ status.viewValue }}
+      </mat-option>
+    </ng-container>
+  </mat-select>
+</mat-form-field>
+     
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Sales Date</mat-label>
