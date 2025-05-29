@@ -130,32 +130,7 @@ export class SaleComponent implements OnInit, OnDestroy {
     imageUrl: string;
   }[] = [];
 
-  customers: Customer[] = [
-    {
-      id: 1,
-      name: 'Customer A',
-      phone: '123-456-7890',
-      address: '123 Main St',
-      email: 'customerA@example.com',
-      createdAt: new Date('2024-01-01'),
-    },
-    {
-      id: 2,
-      name: 'Customer B',
-      phone: '234-567-8901',
-      address: '456 Oak St',
-      email: 'customerB@example.com',
-      createdAt: new Date('2024-01-02'),
-    },
-    {
-      id: 3,
-      name: 'Customer C',
-      phone: '345-678-9012',
-      address: '789 Pine St',
-      email: 'customerC@example.com',
-      createdAt: new Date('2024-01-03'),
-    },
-  ];
+  customers: Customer[] = [];
 
   users = [
     { id: 1, name: 'User A' },
@@ -248,7 +223,7 @@ export class SaleComponent implements OnInit, OnDestroy {
       header: 'Tax Rate',
       field: 'taxRate',
       width: '120px',
-      formatter: (row: any) => `$${row.taxRate?.toFixed(2)}`,
+      formatter: (row: any) => `${row.taxRate?.toFixed(2)}%`,
     },
     {
       header: 'Invoice No',

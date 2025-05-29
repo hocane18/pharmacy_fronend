@@ -1,14 +1,15 @@
-export interface Sale {
+export interface Quotation {
   id?: number;
   customerId: number;
   userId: number;
   totalAmount: number;
+  taxRate?: number;
   invoiceNo: string;
   purchaseDate: Date;
-  items: SaleItem[];
+  items: QuotationItem[];
 }
 
-export interface SaleItem {
+export interface QuotationItem {
   id?: number;
   saleId?: number;
   productId: number;

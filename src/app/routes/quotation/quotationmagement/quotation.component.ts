@@ -18,7 +18,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDividerModule } from '@angular/material/divider';
-import { Sale, SaleItem, Customer } from './quotation.interface';
+import { Quotation, QuotationItem, Customer } from './quotation.interface';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { environment } from '@env/environment';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -95,16 +95,17 @@ export class QuotationComponent implements OnInit, OnDestroy {
     email: '',
   };
 
-  saleForm: Sale = {
+  saleForm: Quotation = {
     customerId: 0,
     userId: 0,
     totalAmount: 0,
+    taxRate: environment.taxRate || 0,
     invoiceNo: '',
     purchaseDate: new Date(),
     items: [],
   };
 
-  saleItemForm: SaleItem = {
+  saleItemForm: QuotationItem = {
     productId: 0,
     quantity: 0,
     price: 0,
@@ -136,26 +137,7 @@ export class QuotationComponent implements OnInit, OnDestroy {
     { id: 3, name: 'User C' },
   ];
 
-  sales: Sale[] = [
-    {
-      id: 1,
-      customerId: 1,
-      userId: 1,
-      totalAmount: 1500.0,
-      invoiceNo: 'INV-001',
-      purchaseDate: new Date('2024-03-15'),
-      items: [
-        {
-          id: 1,
-          saleId: 1,
-          productId: 1,
-          quantity: 10,
-          price: 10.0,
-          total: 100.0,
-        },
-      ],
-    },
-  ];
+  sales: Quotation[] = [];
 
   itemColumns: MtxGridColumn[] = [
     {
@@ -230,6 +212,12 @@ export class QuotationComponent implements OnInit, OnDestroy {
       field: 'totalAmount',
       width: '120px',
       formatter: (row: any) => `$${row.totalAmount.toFixed(2)}`,
+    },
+    {
+      header: 'Tax Rate',
+      field: 'taxRate',
+      width: '120px',
+      formatter: (row: any) => `${row.taxRate.toFixed(2)}%`,
     },
     {
       header: 'Invoice No',
@@ -349,7 +337,7 @@ export class QuotationComponent implements OnInit, OnDestroy {
 
   searchText = '';
   private searchSubject = new Subject<string>();
-  filteredSales: Sale[] = [];
+  filteredSales: Quotation[] = [];
   isItemSaleEditMode = false;
   itemDialogRef: any;
   saleDialogRef: any;
@@ -415,6 +403,7 @@ export class QuotationComponent implements OnInit, OnDestroy {
     this.isEditMode = false;
     this.saleForm = {
       customerId: 0,
+      taxRate: environment.taxRate ?? 0,
       userId: 0,
       totalAmount: 0,
       invoiceNo: '',
@@ -434,7 +423,7 @@ export class QuotationComponent implements OnInit, OnDestroy {
     });
   }
 
-  edit(sale: Sale): void {
+  edit(sale: Quotation): void {
     this.isEditMode = true;
     this.saleForm = {
       ...sale,
@@ -453,14 +442,14 @@ export class QuotationComponent implements OnInit, OnDestroy {
     });
   }
 
-  delete(sale: Sale): void {
-    const index = this.sales.findIndex(s => s.id === sale.id);
-    if (index > -1) {
-      this.sales.splice(index, 1);
-    }
-  }
+  // delete(sale: Quotation): void {
+  //   const index = this.sales.findIndex(s => s.id === sale.id);
+  //   if (index > -1) {
+  //     this.sales.splice(index, 1);
+  //   }
+  // }
 
-  saveSale(saleData: Sale): void {
+  saveSale(saleData: Quotation): void {
     if (this.isEditMode) {
       const index = this.sales.findIndex(s => s.id === saleData.id);
       if (index > -1) {
@@ -499,13 +488,16 @@ export class QuotationComponent implements OnInit, OnDestroy {
     return user ? user.name : userId.toString();
   }
 
-  calculateItemTotal(item: SaleItem): number {
+  calculateItemTotal(item: QuotationItem): number {
     return item.quantity * item.price;
   }
 
   updateSaleTotal(): void {
-    this.saleForm.totalAmount =
-      this.saleForm.items?.reduce((sum: number, item: SaleItem) => sum + item.total, 0) || 0;
+    const subtotal =
+      this.saleForm.items?.reduce((sum: number, item: QuotationItem) => sum + item.total, 0) || 0;
+    const taxAmount = subtotal * ((this.saleForm.taxRate ?? 0) / 100);
+
+    this.saleForm.totalAmount = subtotal + taxAmount;
   }
 
   openAddItemDialog(): void {
@@ -531,7 +523,7 @@ export class QuotationComponent implements OnInit, OnDestroy {
     });
   }
 
-  editItem(item: SaleItem): void {
+  editItem(item: QuotationItem): void {
     console.log('Editing item:', item);
     this.isItemSaleEditMode = true;
     const itemWithId = { ...item, id: item.id ?? item.productId };
@@ -543,7 +535,7 @@ export class QuotationComponent implements OnInit, OnDestroy {
 
     this.itemDialogRef.afterClosed().subscribe((result: any) => {
       if (result) {
-        const index = this.saleForm.items?.findIndex((i: SaleItem) => i.id === result.id);
+        const index = this.saleForm.items?.findIndex((i: QuotationItem) => i.id === result.id);
         if (index !== undefined && index > -1) {
           result.total = this.calculateItemTotal(result);
           this.saleForm.items![index] = result;
@@ -554,8 +546,8 @@ export class QuotationComponent implements OnInit, OnDestroy {
     });
   }
 
-  deleteItem(item: SaleItem): void {
-    const index = this.saleForm.items?.findIndex((i: SaleItem) => i.id === item.id);
+  deleteItem(item: QuotationItem): void {
+    const index = this.saleForm.items?.findIndex((i: QuotationItem) => i.id === item.id);
     if (index !== undefined && index > -1) {
       this.saleForm.items?.splice(index, 1);
       this.saleForm.items = [...this.saleForm.items];
@@ -563,7 +555,7 @@ export class QuotationComponent implements OnInit, OnDestroy {
     }
   }
 
-  onProductChange(item: SaleItem): void {
+  onProductChange(item: QuotationItem): void {
     const product = this.products.find(p => p.id === item.productId);
     if (product) {
       item.price = product.salePrice;
@@ -571,7 +563,7 @@ export class QuotationComponent implements OnInit, OnDestroy {
     }
   }
 
-  onQuantityChange(item: SaleItem): void {
+  onQuantityChange(item: QuotationItem): void {
     const product = this.products.find(p => p.id === item.productId);
     if (product && item.quantity > product.quantity) {
       this.snackBar.open(
@@ -584,7 +576,7 @@ export class QuotationComponent implements OnInit, OnDestroy {
     item.total = this.calculateItemTotal(item);
   }
 
-  view(sale: Sale): void {
+  view(sale: Quotation): void {
     this.dialogData.sale = sale;
     const dialogRef = this.dialog.open(this.viewSaleDialog, {
       width: '800px',
@@ -634,6 +626,32 @@ export class QuotationComponent implements OnInit, OnDestroy {
     }
   }
 
+  delete(sale: Quotation): void {
+    const index = this.sales.findIndex(s => s.id === sale.id);
+    console.log('Deleting sale:', sale, 'Index:', index);
+    const apiUrl = `${environment.apiUrl || ''}Quotation/${sale.id}`;
+    const token = localStorage.getItem('ng-matero-token');
+
+    fetch(apiUrl, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token ? JSON.parse(token)['access_token'] || '' : ''}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(response => {
+        if (response.ok) {
+          this.snackBar.open('Sale deleted successfully!', 'Close', { duration: 2000 });
+          this.loadQuotation();
+        } else {
+          throw new Error('Failed to delete sale');
+        }
+      })
+      .catch(error => {
+        console.error('Error deleting sale:', error);
+        this.snackBar.open('Failed to delete sale. Please try again.', 'Close', { duration: 2000 });
+      });
+  }
   saveCustomer(customerData: Customer): void {
     if (this.isCustomerEditMode) {
       const index = this.customers.findIndex(c => c.id === customerData.id);
@@ -821,12 +839,13 @@ export class QuotationComponent implements OnInit, OnDestroy {
         this.customerLoading = false;
       });
   }
-  private mapSaleDtoToSale(dto: any): Sale {
+  private mapSaleDtoToSale(dto: any): Quotation {
     return {
       id: dto.id,
       customerId: dto.customerId,
       userId: dto.userId,
       totalAmount: dto.totalAmount,
+      taxRate: dto.taxRate ?? 0,
       invoiceNo: dto.invoiceNo,
       purchaseDate: new Date(dto.purchaseDate),
       items: (dto.items || []).map((item: any) => ({
@@ -869,7 +888,7 @@ export class QuotationComponent implements OnInit, OnDestroy {
 
   addSales(sale: any) {
     this.isLoading = true;
-    const apiUrl = `${environment.apiUrl || ''}sales`;
+    const apiUrl = `${environment.apiUrl || ''}Quotation`;
     const token = localStorage.getItem('ng-matero-token');
 
     // Prepare data to match PurchaseDto structure
@@ -878,11 +897,12 @@ export class QuotationComponent implements OnInit, OnDestroy {
       UserId: 0,
       TotalAmount: sale.totalAmount,
       InvoiceNo: '',
+      TaxRate: sale.taxRate ?? 0,
       SalesDate:
         sale.purchaseDate instanceof Date
           ? sale.purchaseDate.toISOString()
           : new Date(sale.purchaseDate).toISOString(),
-      salesItems: sale.items.map((item: SaleItem) => ({
+      QuotationItems: sale.items.map((item: QuotationItem) => ({
         ProductId: item.productId,
         Quantity: item.quantity,
         Price: item.price,
@@ -902,13 +922,13 @@ export class QuotationComponent implements OnInit, OnDestroy {
       .then(data => {
         //this.sales.push(data);
         //  this.filteredSales = [...this.sales];
-        this.snackBar.open('sales added successfully!', 'Close', { duration: 2000 });
+        this.snackBar.open('Quotation added successfully!', 'Close', { duration: 2000 });
         this.isLoading = false;
         this.loadQuotation();
       })
       .catch(error => {
         console.error('Error adding sale:', error);
-        this.snackBar.open('Failed to add sale. Please try again.', 'Close', {
+        this.snackBar.open('Failed to add Quotation. Please try again.', 'Close', {
           duration: 2000,
         });
         this.loadQuotation();
@@ -917,18 +937,19 @@ export class QuotationComponent implements OnInit, OnDestroy {
   }
   updateSales(sale: any) {
     this.isLoading = true;
-    const apiUrl = `${environment.apiUrl || ''}sales/${sale.id}`;
+    const apiUrl = `${environment.apiUrl || ''}Quotation/${sale.id}`;
     // Prepare data to match PurchaseDto structure
     const fordata = {
       CustomerId: sale.customerId,
       UserId: 0,
+      TaxRate: sale.taxRate ?? 0,
       TotalAmount: sale.totalAmount,
       InvoiceNo: '',
       salesDate:
         sale.purchaseDate instanceof Date
           ? sale.purchaseDate.toISOString()
           : new Date(sale.purchaseDate).toISOString(),
-      salesItems: sale.items.map((item: SaleItem) => ({
+      QuotationItems: sale.items.map((item: QuotationItem) => ({
         ProductId: item.productId,
         Quantity: item.quantity,
         Price: item.price,
@@ -950,13 +971,13 @@ export class QuotationComponent implements OnInit, OnDestroy {
       .then(data => {
         // this.sales.push(data);
         // this.filteredSales = [...this.sales];
-        this.snackBar.open('sales updated successfully!', 'Close', { duration: 2000 });
+        this.snackBar.open('Quotation updated successfully!', 'Close', { duration: 2000 });
         this.isLoading = false;
         this.loadQuotation();
       })
       .catch(error => {
         console.error('Error adding sale:', error);
-        this.snackBar.open('Failed to updated sale. Please try again.', 'Close', {
+        this.snackBar.open('Failed to updated Quotation. Please try again.', 'Close', {
           duration: 2000,
         });
         this.loadQuotation();
@@ -964,7 +985,7 @@ export class QuotationComponent implements OnInit, OnDestroy {
       });
   }
 
-  printSale(sale: Sale): void {
+  printSale(sale: Quotation): void {
     // Open a new window
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
@@ -977,7 +998,10 @@ export class QuotationComponent implements OnInit, OnDestroy {
     const userName = this.getUserName(sale.userId);
     const saleDate = new Date(sale.purchaseDate).toLocaleDateString();
     const items = sale.items || [];
-
+    // ...existing code...
+    const taxAmount = this.getSaleTaxAmount(sale);
+    const grandTotal = this.getSaleGrandTotal(sale);
+    // ...existing code...
     // Build the HTML content
     const content = `
     <!DOCTYPE html>
@@ -1044,7 +1068,7 @@ export class QuotationComponent implements OnInit, OnDestroy {
             <tbody>
               ${items
                 .map(
-                  (item: SaleItem) => `
+                  (item: QuotationItem) => `
                 <tr>
                   <td>${this.getProductName(item.productId)}</td>
                   <td>${item.quantity}</td>
@@ -1058,8 +1082,11 @@ export class QuotationComponent implements OnInit, OnDestroy {
           </table>
         </div>
 
-        <div class="total-section">
-          <p class="total-amount">Total Amount: $${sale.totalAmount.toFixed(2)}</p>
+        <div class="total-section">         
+       <p><strong>Subtotal:</strong> $${(sale.totalAmount / (1 + (sale.taxRate ?? environment.taxRate ?? 0) / 100)).toFixed(2)}</p>
+      <p><strong>Tax Rate:</strong> ${sale.taxRate}%</p>
+      <p><strong>Tax Amount:</strong> $${((sale.totalAmount * (sale.taxRate ?? 0)) / (100 + (sale.taxRate ?? 0))).toFixed(2)}</p>
+      <p class="total-amount">Total Amount: $${sale.totalAmount.toFixed(2)}</p>
         </div>
 
         <div class="no-print">
@@ -1159,7 +1186,7 @@ export class QuotationComponent implements OnInit, OnDestroy {
       });
       return;
     }
-
+    this.updateSaleTotal();
     this.saveSale(this.saleForm);
 
     this.saleDialogRef.close(this.saleForm); // Only close if valid!
@@ -1171,6 +1198,13 @@ export class QuotationComponent implements OnInit, OnDestroy {
       this.saleItemForm.quantity > 0 &&
       this.saleItemForm.price >= 0
     );
+  }
+  getSaleGrandTotal(sale: Quotation): number {
+    return sale.totalAmount + this.getSaleTaxAmount(sale);
+  }
+  getSaleTaxAmount(sale: Quotation): number {
+    const taxRate = sale.taxRate ?? environment.taxRate ?? 0;
+    return (sale.totalAmount * taxRate) / 100;
   }
   goToDirections(customerId: number) {
     // Example: environment.mapOrigin and environment.mapApiKey
