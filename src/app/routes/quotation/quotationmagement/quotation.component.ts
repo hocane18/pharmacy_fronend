@@ -217,7 +217,7 @@ export class QuotationComponent implements OnInit, OnDestroy {
       header: 'Tax Rate',
       field: 'taxRate',
       width: '120px',
-      formatter: (row: any) => `${row.taxRate.toFixed(2)}%`,
+      formatter: (row: any) => `${row.taxRate?.toFixed(2)}`,
     },
     {
       header: 'Invoice No',
@@ -897,8 +897,9 @@ export class QuotationComponent implements OnInit, OnDestroy {
       UserId: 0,
       TotalAmount: sale.totalAmount,
       InvoiceNo: '',
+      status: 'pending',
       TaxRate: sale.taxRate ?? 0,
-      SalesDate:
+      QuotationDate:
         sale.purchaseDate instanceof Date
           ? sale.purchaseDate.toISOString()
           : new Date(sale.purchaseDate).toISOString(),
@@ -945,7 +946,8 @@ export class QuotationComponent implements OnInit, OnDestroy {
       TaxRate: sale.taxRate ?? 0,
       TotalAmount: sale.totalAmount,
       InvoiceNo: '',
-      salesDate:
+      status: 'pending',
+      QuotationDate:
         sale.purchaseDate instanceof Date
           ? sale.purchaseDate.toISOString()
           : new Date(sale.purchaseDate).toISOString(),
