@@ -79,35 +79,7 @@ export class PermissionsRoleComponent implements OnInit, OnDestroy {
       name: string;
       description: string;
     }[];
-  }[] = [
-    {
-      id: '1',
-      name: 'ADMIN',
-      description: 'Administrator with full access',
-      permissions: [
-        { id: 'canAdd', name: 'Add', description: 'Can add items' },
-        { id: 'canDelete', name: 'Delete', description: 'Can delete items' },
-        { id: 'canEdit', name: 'Edit', description: 'Can edit items' },
-        { id: 'canRead', name: 'Read', description: 'Can read items' },
-      ],
-    },
-    {
-      id: '2',
-      name: 'MANAGER',
-      description: 'Manager with limited access',
-      permissions: [
-        { id: 'canAdd', name: 'Add', description: 'Can add items' },
-        { id: 'canEdit', name: 'Edit', description: 'Can edit items' },
-        { id: 'canRead', name: 'Read', description: 'Can read items' },
-      ],
-    },
-    {
-      id: '3',
-      name: 'GUEST',
-      description: 'Guest with read-only access',
-      permissions: [{ id: 'canRead', name: 'Read', description: 'Can read items' }],
-    },
-  ];
+  }[] = [];
 
   columns: MtxGridColumn[] = [
     {
